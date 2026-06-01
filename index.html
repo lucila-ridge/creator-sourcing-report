@@ -30,6 +30,13 @@
   .monthsel option{background:#1A1A18;color:#fff;}
   .monthbanner{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#1A1A18;color:#fff;padding:8px 16px;border-radius:4px;font-size:11px;letter-spacing:.04em;z-index:200;opacity:0;transition:opacity .2s;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.3);}
   .monthbanner.show{opacity:1;}
+  .loader{position:fixed;inset:0;background:rgba(240,240,237,0.96);z-index:9998;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;transition:opacity .25s;}
+  .loader.hide{opacity:0;pointer-events:none;}
+  .loader .spin{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--rust);border-radius:50%;animation:spin 0.7s linear infinite;}
+  .loader .lbl{font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:500;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .lastsync{position:fixed;bottom:10px;right:14px;font-size:10px;color:var(--muted);background:#fff;padding:3px 10px;border:1px solid var(--border);border-radius:999px;font-family:'Barlow Condensed',sans-serif;font-weight:500;text-transform:uppercase;letter-spacing:.06em;z-index:50;}
+  .lastsync a{color:var(--rust);text-decoration:none;margin-left:8px;}
   .fbar{background:var(--surface);border-bottom:1px solid var(--border);padding:9px 24px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;position:sticky;top:50px;z-index:101;}
   .fgrp{display:flex;align-items:center;gap:8px;}
   .flabel{font-size:10px;color:var(--black);font-family:'Barlow Condensed',sans-serif;font-weight:800;text-transform:uppercase;letter-spacing:.08em;}
@@ -138,18 +145,13 @@
   <!-- ============ TAB 1: SOURCING PIPELINE ============ -->
   <div id="t1">
     <div class="sechdr"><h2>Sourcing Pipeline</h2><p>Volume and progression through the outreach pipeline this month.</p></div>
-    <div class="kpis">
-      <div class="kpi"><div class="lbl">Outreach This Month</div><div class="row"><span class="num">168</span><span class="pill flat">–</span></div><div class="sub">creators contacted</div></div>
-      <div class="kpi"><div class="lbl" data-tip="Deals where Deal Closed Date falls in the selected month.">Deals Closed</div><div class="row"><span class="num">24</span><span class="pill flat">–</span></div><div class="sub">14% of outreach</div></div>
-      <div class="kpi"><div class="lbl" data-tip="Unique creators with ≥1 AD-CREATIVE concept (task in Team Task Board) due this month. Includes creators sourced earlier — anyone we actually worked with.">Active Creators</div><div class="row"><span class="num">43</span><span class="pill up">+19%</span></div><div class="sub">produced ≥1 concept this month</div></div>
-      <div class="kpi"><div class="lbl" data-tip="Average partnerships active during the month (PT Access Status = Active across all days). Avoids fluctuations from snapshot-at-open.">Partnership Access</div><div class="row"><span class="num">39</span><span class="pill flat">–</span></div><div class="sub">avg active during the month</div></div>
-    </div>
+    <div class="kpis" id="srcKpis"></div>
 
     <div class="card">
       <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;align-items:start;">
         <div>
-          <div style="display:flex;justify-content:space-between;align-items:baseline;"><div class="ct">Sourcing Funnel</div><div class="cs" data-tip="Cohort = creators added to the database this month (by Created time). Stage = their current Outreach Status. Pass/Ghosted = added this month, currently lost.">May '26 cohort · 168 added · ⓘ</div></div>
-          <div class="cs" style="margin-bottom:16px;">Of the 168 creators we added to the database this month, where each one sits in the sourcing pipeline as of today.</div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;"><div class="ct">Sourcing Funnel</div><div class="cs" data-tip="Cohort = creators added to the database this month (by Created time). Stage = their current Outreach Status. Pass/Ghosted = added this month, currently lost."><span id="cohortLabel">May '26 cohort · 168 added</span> · ⓘ</div></div>
+          <div class="cs" style="margin-bottom:16px;" id="cohortDesc">Of the 168 creators we added to the database this month, where each one sits in the sourcing pipeline as of today.</div>
           <div id="funnel"></div>
           <div style="margin-top:16px;padding-top:14px;border-top:.5px solid var(--border);">
             <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:8px;">Lost in cohort</div>
@@ -157,14 +159,14 @@
           </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0;">
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:14px;text-align:center;" data-tip="Of the 104 creators we emailed this month, how many wrote back.">Reply Rate ⓘ</div>
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:14px;text-align:center;" data-tip="Of the creators we emailed this month, how many wrote back.">Reply Rate ⓘ</div>
           <svg viewBox="0 0 200 200" style="width:180px;display:block;">
             <circle cx="100" cy="100" r="78" fill="none" stroke="#E8E8E4" stroke-width="14"/>
-            <circle cx="100" cy="100" r="78" fill="none" stroke="var(--rust)" stroke-width="14" stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="274" transform="rotate(-90 100 100)"/>
-            <text x="100" y="98" text-anchor="middle" dominant-baseline="central" font-size="40" font-weight="700" fill="var(--black)" font-family="'Barlow',sans-serif">44%</text>
+            <circle cx="100" cy="100" r="78" fill="none" stroke="var(--rust)" stroke-width="14" stroke-linecap="round" stroke-dasharray="490" id="replyRing" stroke-dashoffset="490" transform="rotate(-90 100 100)"/>
+            <text x="100" y="98" text-anchor="middle" dominant-baseline="central" font-size="40" font-weight="700" fill="var(--black)" font-family="'Barlow',sans-serif" id="replyPct">0%</text>
             <text x="100" y="138" text-anchor="middle" font-size="9" fill="var(--muted)" letter-spacing="2" font-family="'Barlow',sans-serif">REPLIED</text>
           </svg>
-          <div style="margin-top:14px;text-align:center;font-size:11px;color:var(--muted);line-height:1.5;">46 replies from <b style="color:var(--black);">104</b> emails sent</div>
+          <div style="margin-top:14px;text-align:center;font-size:11px;color:var(--muted);line-height:1.5;" id="replyStats"><span id="replyN">0</span> replies from <b style="color:var(--black);" id="replyM">0</b> emails sent</div>
         </div>
       </div>
     </div>
@@ -193,12 +195,12 @@
 
   <!-- ============ TAB 2: ROSTER COMPOSITION ============ -->
   <div id="t2" class="hide">
-    <div class="sechdr"><h2>Roster Composition</h2><p>Where the 354 creators in our roster sit across niche, tier, demographics, and persona. All-time snapshot.</p></div>
+    <div class="sechdr"><h2>Roster Composition</h2><p>Where the <span id="rosterTotalSub">217</span> closed-deal creators in our roster sit across niche, tier, demographics, and persona. <em>Filtered to Outreach Status = Deal Closed.</em></p></div>
 
     <div class="row2">
       <div class="card" style="margin-bottom:0;">
         <div class="ct" style="margin-bottom:2px;">By Niche</div>
-        <div class="cs" style="margin-bottom:8px;">what describes who they are · multi-tag · hover for exact count</div>
+        <div class="cs" style="margin-bottom:8px;">closed-deal creators · multi-tag · hover for exact count</div>
         <div id="nicheTags" style="display:flex;flex-wrap:wrap;gap:6px;padding:14px 4px 4px;align-items:center;"></div>
       </div>
       <div class="card" style="margin-bottom:0;">
@@ -217,12 +219,12 @@
 
     <div class="card">
       <div class="ct" style="margin-bottom:2px;">Roster Health</div>
-      <div class="cs" style="margin-bottom:14px;">Quick read on whether the pool is growing and healthy</div>
+      <div class="cs" style="margin-bottom:14px;">Quick read on whether the closed-deal pool is growing and healthy</div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
-        <div><div style="font-size:28px;font-weight:700;">354</div><div style="font-size:11px;color:var(--muted);">total roster</div></div>
-        <div><div style="font-size:28px;font-weight:700;color:var(--pos);">+168</div><div style="font-size:11px;color:var(--muted);">added this month</div></div>
-        <div><div style="font-size:28px;font-weight:700;">39</div><div style="font-size:11px;color:var(--muted);">with active access</div></div>
-        <div><div style="font-size:28px;font-weight:700;color:var(--neg);">52</div><div style="font-size:11px;color:var(--muted);" data-tip="Creators who had AD-CREATIVE tasks before but none in the last 6 months.">stagnant · 6mo idle</div></div>
+        <div><div style="font-size:28px;font-weight:700;" id="rhTotal">—</div><div style="font-size:11px;color:var(--muted);">closed-deal roster</div></div>
+        <div><div style="font-size:28px;font-weight:700;color:var(--pos);" id="rhNew">—</div><div style="font-size:11px;color:var(--muted);">closed this month</div></div>
+        <div><div style="font-size:28px;font-weight:700;" id="rhActive">—</div><div style="font-size:11px;color:var(--muted);">with active access</div></div>
+        <div><div style="font-size:28px;font-weight:700;color:var(--neg);" id="rhStagnant">—</div><div style="font-size:11px;color:var(--muted);" data-tip="Closed-deal creators who had AD-CREATIVE tasks before but none in the last 6 months.">stagnant · 6mo idle</div></div>
       </div>
     </div>
   </div>
@@ -288,34 +290,30 @@
   <!-- ============ TAB 4: CONCEPTS ============ -->
   <div id="t4" class="hide">
     <div class="sechdr"><h2>Concepts</h2><p>Creator tiering by usage, throughput, and the actual concepts produced this month.</p></div>
-    <div class="kpis">
-      <div class="kpi"><div class="lbl">Creator Concepts</div><div class="row"><span class="num">72</span><span class="pill up">+22%</span></div><div class="sub">finalized this month</div></div>
-      <div class="kpi"><div class="lbl" data-tip="Unique creators who produced ≥1 concept this month.">Total Creators</div><div class="row"><span class="num">43</span><span class="pill up">+19%</span></div><div class="sub">produced this month</div></div>
-      <div class="kpi"><div class="lbl">Avg Concepts / Creator</div><div class="row"><span class="num">1.7</span><span class="pill flat">1–6</span></div><div class="sub">72 ÷ 43 creators</div></div>
-      <div class="kpi"><div class="lbl">Vertical vs Horizontal</div><div class="row"><span class="num">89%</span><span class="pill flat">VID</span></div><div class="sub">756 VID · 86 TV (horizontal)</div></div>
-    </div>
+    <div class="kpis" id="conceptsKpis"></div>
 
     <div class="card">
       <div class="ct" style="margin-bottom:2px;">Creator Tiers</div>
       <div class="cs" style="margin-bottom:14px;">Based on concepts produced in the last 6 months</div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
         <div style="border:1px solid var(--border);border-left:4px solid var(--tierA);border-radius:8px;padding:14px 16px;">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;font-weight:700;color:var(--tierA);">Tier A</span><span style="font-size:30px;font-weight:700;line-height:1;">6</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;font-weight:700;color:var(--tierA);">Tier A</span><span style="font-size:30px;font-weight:700;line-height:1;" id="tierA">—</span></div>
           <div data-tip="Tier A: ≥10 concepts in the last 6 months." style="font-size:11px;color:var(--muted);margin-top:6px;">Go-to creators — reliable, high-volume, we come back constantly ⓘ</div>
         </div>
         <div style="border:1px solid var(--border);border-left:4px solid var(--tierB);border-radius:8px;padding:14px 16px;">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;font-weight:700;color:var(--tierB);">Tier B</span><span style="font-size:30px;font-weight:700;line-height:1;">16</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;font-weight:700;color:var(--tierB);">Tier B</span><span style="font-size:30px;font-weight:700;line-height:1;" id="tierB">—</span></div>
           <div data-tip="Tier B: 3–9 concepts in the last 6 months." style="font-size:11px;color:var(--muted);margin-top:6px;">Solid, dependable, used regularly ⓘ</div>
         </div>
         <div style="border:1px solid var(--border);border-left:4px solid var(--tierC);border-radius:8px;padding:14px 16px;">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;font-weight:700;color:#B07A4A;">Tier C</span><span style="font-size:30px;font-weight:700;line-height:1;">44</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;font-weight:700;color:#B07A4A;">Tier C</span><span style="font-size:30px;font-weight:700;line-height:1;" id="tierC">—</span></div>
           <div data-tip="Tier C: 1–2 concepts in the last 6 months." style="font-size:11px;color:var(--muted);margin-top:6px;">Occasional, known and reachable but rarely used ⓘ</div>
         </div>
         <div style="border:1px solid var(--border);border-left:4px solid var(--tierInactive);border-radius:8px;padding:14px 16px;">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;font-weight:700;color:var(--muted);">Inactive</span><span style="font-size:30px;font-weight:700;line-height:1;color:var(--muted);">288</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;font-weight:700;color:var(--muted);">Inactive</span><span style="font-size:30px;font-weight:700;line-height:1;color:var(--muted);" id="tierInactive">—</span></div>
           <div data-tip="Inactive: no concepts in the last 6 months." style="font-size:11px;color:var(--muted);margin-top:6px;">Sourced but not producing right now ⓘ</div>
         </div>
       </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:10px;font-style:italic;">Calculated across the <span id="tierAcross">217</span> closed-deal creators.</div>
     </div>
 
     <div class="card">
@@ -340,12 +338,7 @@
   <!-- ============ TAB 5: PROJECTIONS ============ -->
   <div id="t5" class="hide">
     <div class="sechdr"><h2>Projections</h2><p>What's coming next month, based on AD-CREATIVE tasks currently in Working On It in the Team Task Board.</p></div>
-    <div class="kpis">
-      <div class="kpi"><div class="lbl" data-tip="AD-CREATIVE tasks in Team Task Board · Status: New or Working On It · with a Creator assigned. Concepts being produced right now, expected to land next month.">Concepts Producing Right Now</div><div><div class="row"><span class="num">55</span><span class="pill flat">→ Jun '26</span></div><div class="sub">waiting on creator delivery</div></div></div>
-      <div class="kpi"><div class="lbl" data-tip="Estimated payout for content currently in production — what we'll pay once these concepts are delivered next month. Sum across the 55 tasks: filled Creator Rate from Notion + retainer $450 (Brandon, Mackenzie Studios) when empty + $230 estimate for the rest.">Projected Payout</div><div><div class="row"><span class="num">$15.2k</span><span class="pill flat">vs last mo —</span></div><div class="sub">to pay next month</div></div></div>
-      <div class="kpi"><div class="lbl" data-tip="Average rate per concept across the 55 in production. Concepts at $0 (Not UGC tag) are excluded from this average so they don't artificially drag it down.">Average Concept Rate</div><div><div class="row"><span class="num">$276</span><span class="pill flat">$0–$500</span></div><div class="sub">excludes $0 concepts</div></div></div>
-      <div class="kpi"><div class="lbl">Creators Producing Right Now</div><div><div class="row"><span class="num">26</span><span class="pill flat">unique</span></div><div class="sub">in production</div></div></div>
-    </div>
+    <div class="kpis" id="projKpis"></div>
 
     <div class="row2">
       <div class="scard"><div class="st" style="margin-bottom:2px;">By Category</div><div class="ss">where the upcoming concepts will land</div><div id="projCatBars"></div></div>
@@ -353,7 +346,7 @@
     </div>
 
     <div class="scard">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;"><div class="st">Concepts in Production</div><span class="ss" style="margin:0;">55 concepts · click column header to sort · click title to open script · button opens task in Notion</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;"><div class="st">Concepts in Production</div><span class="ss" style="margin:0;"><span id="projConceptsCount">—</span> concepts · click column header to sort · click title to open script · button opens task in Notion</span></div>
       <div style="max-height:420px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;margin-top:8px;">
       <table class="tbl"><thead style="position:sticky;top:0;z-index:2;"><tr>
         <th class="sortable" data-col="0" onclick="sortProj(0)">Concept Title <span class="sortar" id="sa0">⇅</span></th>
@@ -376,23 +369,28 @@
 
 <div class="tipbox" id="tipbox"></div>
 <div class="monthbanner" id="monthbanner"></div>
+<div class="loader" id="loader"><div class="spin"></div><div class="lbl" id="loaderLbl">Loading live data from Notion…</div></div>
+<div class="lastsync" id="lastsync"></div>
 
 <script>
-const OUTREACH = {
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWtP6r3AQE609CvgJNlaXltTfL6J3nC_zi9RRuRf1e0CrpuK4bEUWKyy0a7AF7n58/exec";
+let LIVE_DATA = null;  // populated by loadData()
+
+let OUTREACH = {
   gender: { Male:[113,0,0,0,0,0,0,0], Female:[55,0,0,0,0,0,0,0], "Not set":[0,0,0,0,0,0,0,0] },
   age: { "25-35 years old":[110,0,0,0,0,0,0,0], "35-45 years old":[33,0,0,0,0,0,0,0], "45-60 years old":[8,0,0,0,0,0,0,0], "Not set":[17,0,0,0,0,0,0,0] },
   months:["May '26","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
   colors:{ Male:"#5B7FA6", Female:"#B96B5A", "25-35 years old":"#6F9A77","35-45 years old":"#8E73B5","45-60 years old":"#C18A48","Not set":"#C8C8C0" }
 };
-const FUNNEL=[{s:"Prospect",n:168,pct:100,drop:null},{s:"Approved Int.",n:137,pct:82,drop:-18},{s:"Outreached",n:104,pct:62,drop:-24},{s:"Replied",n:46,pct:27,drop:-56},{s:"Negotiating",n:36,pct:21,drop:-22},{s:"Deal Closed",n:31,pct:18,drop:null,win:true}];
-const LOST=[{s:"Pass",n:11,pct:7},{s:"Ghosted",n:0,pct:0}];
-const NICHES=[["UGC",109],["Lifestyle",85],["Wives/Moms",39],["Surf",36],["Tech",30],["Fitness",19],["Not UGC",17],["Outdoorsy",16],["Family Creators",16],["Older Guys",14],["Premium EDC",11],["Dad",11]];
+let FUNNEL=[{s:"Prospect",n:168,pct:100,drop:null},{s:"Approved Int.",n:137,pct:82,drop:-18},{s:"Outreached",n:104,pct:62,drop:-24},{s:"Replied",n:46,pct:27,drop:-56},{s:"Negotiating",n:36,pct:21,drop:-22},{s:"Deal Closed",n:31,pct:18,drop:null,win:true}];
+let LOST=[{s:"Pass",n:11,pct:7},{s:"Ghosted",n:0,pct:0}];
+let NICHES=[["UGC",70],["Wives/Moms",30],["Not UGC",17],["Lifestyle",15],["Older Guys",13],["Tech",8],["Premium EDC",6],["Fitness",5],["Outdoorsy",4],["Family Creators",4],["Green Screen",4],["Dad",3]];
 const FORMAT_STYLES=[["Unboxing",24],["Yapping",18],["Street Interview",12],["Tutorial",9],["Lifestyle Skit",7],["Voiceover",4]];
-const TIERSORT=[["Nano (<10k)",81,"46%"],["Micro (10–100k)",79,"45%"],["Mid (100–500k)",13,"7%"],["Macro (500k–1M)",0,"0%"],["Mega (1M+)",0,"0%"]];
-const AGES=[["25 – 35",197,"100%"],["35 – 45",59,"30%"],["45 – 60",15,"8%"],["(not set)",83,"42%"]];
+let TIERSORT=[["Nano (<10k)",25,"100%"],["Micro (10–100k)",9,"36%"],["Mid (100–500k)",2,"8%"],["Macro (500k–1M)",0,"0%"],["Mega (1M+)",0,"0%"]];
+let AGES=[["25 – 35",97,"100%"],["35 – 45",27,"28%"],["45 – 60",10,"10%"],["(not set)",83,"86%"]];
 const PERSONAS=[["Lifestyle/Creator",72,"100%"],["Family Man",47,"65%"],["Outdoorsman",38,"53%"],["Mom-type",28,"39%"],["Gearhead",22,"31%"],["Tech/Gamer",15,"21%"],["Pro / Uniform",12,"17%"],["(Unassigned)",120,"100%"]];
-// [name, handle, niche, categories[], concepts, momDelta, gender]  ·  all 39 active partners
-const PARTNERS=[
+// [name, handle, niche, categories[], concepts, momDelta, gender]
+let PARTNERS=[
   ["Ben Horne","@occupiedliving","UGC",["EDC","Jewelry","Tech","Travel"],9,"new","Male"],
   ["Brandon Romanchuk","@currentspaces","Premium EDC",["EDC","Jewelry","Tech","Travel"],9,"+6","Male"],
   ["Jon Lavallee","@jon.lava","Premium EDC",["EDC","Jewelry","Tech","Travel"],9,"+7","Male"],
@@ -434,13 +432,13 @@ const PARTNERS=[
 ];
 let partnerGenderFilter="all";
 // Gender-filtered KPI stats for Partnership Access tab
-const PT_STATS={
+let PT_STATS={
   all:    {active:39, producing:24, idle:15, utilPct:62, done:47, progress:22, total:69, avg:"2.9"},
   Male:   {active:24, producing:15, idle:9,  utilPct:62, done:34, progress:19, total:53, avg:"3.5"},
   Female: {active:13, producing:8,  idle:5,  utilPct:62, done:13, progress:2,  total:15, avg:"1.9"}
 };
 // Real idle partner list — [name, gender, niche, access window, flag]
-const IDLE_PARTNERS=[
+let IDLE_PARTNERS=[
   ["Angela Zhou @barsoapang","Female","Tech","no dates set",null],
   ["Benjamin - Mackenzie Studio Works","Male","—","no dates set",null],
   ["Carly Shasho @carlyshasho","Female","—","no dates set",null],
@@ -459,7 +457,7 @@ const IDLE_PARTNERS=[
 ];
 const CATCOLOR={EDC:"#5B7FA6",Jewelry:"#8E73B5",Tech:"#C18A48",Travel:"#6F9A77","Gut-Culture":"#B96B5A"};
 // [name, count, gender] · all 24 producing active partners
-const TOPPROD=[
+let TOPPROD=[
   ["Brandon Romanchuk",9,"Male"],
   ["Jon Lavallee",9,"Male"],
   ["Ben Horne",9,"Male"],
@@ -486,7 +484,7 @@ const TOPPROD=[
   ["Mike Mazurek",1,"Male"]
 ];
 // [name, gender, ptStatus, niche, categories[], concepts, momDelta]
-const NO_PT_ACCESS=[
+let NO_PT_ACCESS=[
   ["Marques Brownlee @mkbhd","Male","Negotiating","Not UGC",["EDC","Tech"],7,-8],
   ["Jessalyn Tester @jessalyn.ugc","Female","Per Video or Month","Wives/Moms",["EDC","Tech"],4,+2],
   ["Nicole Webb","Female","Per Video or Month","UGC",["EDC","Jewelry","Tech"],3,+2],
@@ -508,7 +506,7 @@ const NO_PT_ACCESS=[
   ["Robert Bathe (PissMissile)","Male","Not started","Golf",["Travel"],1,0]
 ];
 // [name, gender, dateLabel, endIso, urgency]  urgency: "soon"|"later"|"expired"
-const EXPIRING=[
+let EXPIRING=[
   ["Nick Castle","Male","Feb 7 (expired)","2026-02-07","expired"],
   ["Zak Brahmbhatt","Male","Jun 15","2026-06-15","soon"],
   ["Gabriel Saint Elien","Male","Jun 15","2026-06-15","soon"],
@@ -518,19 +516,22 @@ const EXPIRING=[
   ["Sarah Franz","Female","Jul 15","2026-07-15","later"],
   ["Mike Mazurek","Male","Aug 25","2026-08-25","later"]
 ];
-const THROUGHPUT=[["Dec",24],["Jan",35],["Feb",64],["Mar",43],["Apr",59],["May",72]];
-const TOPCREATORS=[["Brandon Romanchuk",39],["Jon Lavallee",35],["Marques Brownlee",31],["AI Creator",19],["Keeley Mazurek",18],["Daniel Kane",15]];
-const CATS=[["EDC",155,"#5B7FA6"],["Tech",59,"#C18A48"],["Jewelry",57,"#8E73B5"],["Travel",15,"#6F9A77"],["Gut-Culture",10,"#B96B5A"]];
-// [title, repeats, format, scriptUrl]
-const CONCEPTS_REP=[
-  ["Unboxing",7,"VID","https://docs.google.com/document/d/1unboxing/edit"],
-  ["Everything You Need",6,"VID","https://docs.google.com/document/d/1G__tyYBpRC3SUIdufiFopn_76FH7zR1oDrW5STpWBOg/edit"],
-  ["MKBHD FDAY INSTREAM CALL OUTS",6,"TV","https://docs.google.com/document/d/1mkbhd/edit"],
-  ["Watch This Concept",6,"VID","https://docs.google.com/document/d/1watch/edit"],
-  ["Brand Video",4,"VID",null],
-  ["exposing my friends gift - fday",4,"VID","https://docs.google.com/document/d/1exposing/edit"],
-  ["most powerful wallet - fday",4,"VID","https://docs.google.com/document/d/1powerful/edit"],
-  ["Perfect wallet for husbands iphone - fday",4,"VID","https://docs.google.com/document/d/1perfect/edit"]
+let THROUGHPUT=[["Dec",24],["Jan",35],["Feb",64],["Mar",43],["Apr",59],["May",72]];
+let TOPCREATORS=[["Brandon Romanchuk",39],["Jon Lavallee",35],["Marques Brownlee",31],["AI Creator",19],["Keeley Mazurek",18],["Daniel Kane",15]];
+let CATS=[["EDC",155,"#5B7FA6"],["Tech",59,"#C18A48"],["Jewelry",57,"#8E73B5"],["Travel",15,"#6F9A77"],["Gut-Culture",10,"#B96B5A"]];
+// [title, repeats, format, scriptUrl] · only concepts with a script linked in the title
+let CONCEPTS_REP=[
+  ["Everything You Need",7,"VID","https://docs.google.com/document/d/1G__tyYBpRC3SUIdufiFopn_76FH7zR1oDrW5STpWBOg/edit"],
+  ["Watch This Concept",6,"VID","https://docs.google.com/document/d/1663heST8r02zc1example/edit"],
+  ["exposing my friends gift - fday",4,"VID","https://docs.google.com/document/d/1N_3x-RXTWZ4mRhexample/edit"],
+  ["most powerful wallet - fday",4,"VID","https://docs.google.com/document/d/1Lq_0wKe0eVC_JAexample/edit"],
+  ["Perfect wallet for husbands iphone - fday",4,"VID","https://docs.google.com/document/d/1J06ZCtfIYDjSWbexample/edit"],
+  ["for my future wife - fday",4,"VID","https://docs.google.com/document/d/1gXb7FvI7M2o6m8example/edit"],
+  ["Watch This",4,"VID","https://docs.google.com/document/d/1663heST8r02zc1example/edit"],
+  ["The Dad Tax",3,"VID","https://docs.google.com/document/d/1YeLsbj-yDb_6JFexample/edit"],
+  ["gear will turn retro - fday",3,"VID","https://docs.google.com/document/d/172fcagXeFTvljzexample/edit"],
+  ["dads definitely built this - fday",3,"VID","https://docs.google.com/document/d/1kz6qI3wfFZqqPBexample/edit"],
+  ["Power Built Better",3,"VID","https://docs.google.com/document/d/19yk_bmN68epOvMexample/edit"]
 ];
 
 function showTab(id){
@@ -552,11 +553,11 @@ function handleMonthChange(value, label){
   monthBannerTimeout=setTimeout(()=>banner.classList.remove("show"),3500);
 }
 
-const PROJ_CATS=[["EDC",24,"#5B7FA6"],["TECH",13,"#C18A48"],["TRAVEL",10,"#6F9A77"],["JEWELRY",8,"#8E73B5"]];
+let PROJ_CATS=[["EDC",24,"#5B7FA6"],["TECH",13,"#C18A48"],["TRAVEL",10,"#6F9A77"],["JEWELRY",8,"#8E73B5"]];
 // [creator, count, ptStatus or null]
-const PROJ_TOPCR=[["Jon Lavallee",7,"Active"],["Brandon Romanchuk",6,"Active"],["Ben Horne",5,"Active"],["Mackenzie Studios",4,"Active"],["Zak Brahmbhatt",3,"Expiring Jun 15"],["Niki Zamora",3,null],["Roby Brown",2,"Active"]];
+let PROJ_TOPCR=[["Jon Lavallee",7,"Active"],["Brandon Romanchuk",6,"Active"],["Ben Horne",5,"Active"],["Mackenzie Studios",4,"Active"],["Zak Brahmbhatt",3,"Expiring Jun 15"],["Niki Zamora",3,null],["Roby Brown",2,"Active"]];
 // [title, category, creator, rate, source, scriptUrl, taskUrl, ptStatus]
-const PROJ_CONCEPTS=[
+let PROJ_CONCEPTS=[
   ["Everything You Need","TECH","Charlotte van der Wee",150,"filled","https://docs.google.com/document/d/1Bh8efcl-pFJWCxIFrxB9OnNza8JfJe3nnG3SLSA3GBs/edit","https://www.notion.so/ridgewallet/ey-a",null],
   ["Everything You Need","TECH","Manuela Castro",150,"filled","https://docs.google.com/document/d/1G__tyYBpRC3SUIdufiFopn_76FH7zR1oDrW5STpWBOg/edit","https://www.notion.so/ridgewallet/ey-b",null],
   ["Everything You Need","TECH","Sierra Bowden",500,"filled","https://docs.google.com/document/d/1G__tyYBpRC3SUIdufiFopn_76FH7zR1oDrW5STpWBOg/edit","https://www.notion.so/ridgewallet/ey-c","Active"],
@@ -651,7 +652,10 @@ function renderPersonaBars(){
 }
 
 function renderGenderDonut(){
-  const cx=70,cy=70,ro=56,ri=34;const segs=[["Male",229,"#5B7FA6"],["Female",115,"#B96B5A"],["Not set",10,"#C8C8C0"]];const total=354;let cum=-Math.PI/2,paths="";
+  const cx=70,cy=70,ro=56,ri=34;
+  const g = LIVE_DATA && LIVE_DATA.roster.gender ? LIVE_DATA.roster.gender : {male:137,female:69,notSet:11};
+  const segs=[["Male",g.male,"#5B7FA6"],["Female",g.female,"#B96B5A"],["Not set",g.notSet,"#C8C8C0"]];
+  const total=segs.reduce((s,x)=>s+x[1],0);let cum=-Math.PI/2,paths="";
   segs.forEach(([n,v,c])=>{const ang=(v/total)*2*Math.PI,a0=cum,a1=cum+ang;cum=a1;const x1=cx+ro*Math.cos(a0),y1=cy+ro*Math.sin(a0),x2=cx+ro*Math.cos(a1),y2=cy+ro*Math.sin(a1),x3=cx+ri*Math.cos(a1),y3=cy+ri*Math.sin(a1),x4=cx+ri*Math.cos(a0),y4=cy+ri*Math.sin(a0),la=ang>Math.PI?1:0;paths+=`<path d="M ${x1} ${y1} A ${ro} ${ro} 0 ${la} 1 ${x2} ${y2} L ${x3} ${y3} A ${ri} ${ri} 0 ${la} 0 ${x4} ${y4} Z" fill="${c}" stroke="#fff" stroke-width="1" data-tip="${n}: ${v} (${Math.round(v/total*100)}%)"></path>`;});
   document.getElementById("genderDonut").innerHTML=`<svg viewBox="0 0 140 140" style="width:120px;">${paths}</svg><div class="legend" style="justify-content:center;">`+segs.map(([n,v,c])=>`<div class="li"><span class="sw" style="background:${c};"></span><span style="font-weight:600;">${n} ${Math.round(v/total*100)}%</span></div>`).join("")+`</div>`;
 }
@@ -782,7 +786,7 @@ function renderTopCreators(){const max=TOPCREATORS[0][1];document.getElementById
 function renderCats(){const max=CATS[0][1];document.getElementById("catBars").innerHTML=CATS.map(([n,v,c],i)=>`<div class="bar-row" style="margin-bottom:9px;"><div class="top"><span style="font-weight:600;"><span style="color:var(--rust);font-weight:700;margin-right:6px;">${i+1}</span>${n}</span><span style="font-weight:700;">${v}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(v/max)*100}%;background:${c};"></div></div></div>`).join("");}
 
 function renderConcepts(){
-  document.getElementById("conceptList").innerHTML=CONCEPTS_REP.map(([t,c,fmt,url])=>{
+  document.getElementById("conceptList").innerHTML=CONCEPTS_REP.filter(([t,c,fmt,url])=>!!url).map(([t,c,fmt,url])=>{
     const fmtBadge = fmt==="VID" ? '<span style="display:inline-block;padding:2px 7px;border-radius:999px;font-size:9px;font-weight:700;background:#E6EEF7;color:#2C5A8A;" data-tip="Vertical format (Meta)">VID</span>' : '<span style="display:inline-block;padding:2px 7px;border-radius:999px;font-size:9px;font-weight:700;background:#FBE9D8;color:#8A5A1F;" data-tip="Horizontal format (YouTube / stream)">TV</span>';
     const titleHtml = url ? `<a href="${url}" target="_blank" style="flex:1;font-weight:600;color:var(--black);border-bottom:1px dotted var(--rust);text-decoration:none;" data-tip="Open script (Google Docs)">${t}</a>` : `<span style="flex:1;font-weight:600;">${t}</span>`;
     return `<div class="concept-row"><span class="rep-badge">${c}×</span>${titleHtml}${fmtBadge}</div>`;
@@ -837,7 +841,152 @@ function renderProjections(){
   renderProjConceptRows();
 }
 
-renderOutreach("gender");renderFunnel();renderNicheCloud();renderFormatTags();renderTierBars();renderAges();renderPersonaBars();renderGenderDonut();renderPtKpis();renderPartners();renderIdle();renderTopProducers();renderExpiring();renderNoPt();renderThroughput();renderTopCreators();renderCats();renderConcepts();renderProjections();
+// ====================================================================
+// LIVE DATA LOADER (JSONP from Apps Script)
+// ====================================================================
+function renderAll(){
+  renderOutreach("gender");renderFunnel();renderNicheCloud();renderFormatTags();
+  renderTierBars();renderAges();renderPersonaBars();renderGenderDonut();
+  renderSrcKpis();renderPtKpis();renderConceptsKpis();renderProjKpis();
+  renderRosterHealth();renderTierBoxes();renderReplyRate();
+  renderPartners();renderIdle();renderTopProducers();renderExpiring();renderNoPt();
+  renderThroughput();renderTopCreators();renderCats();renderConcepts();renderProjections();
+}
+
+function renderSrcKpis(){
+  const el=document.getElementById("srcKpis"); if(!el) return;
+  const k = LIVE_DATA ? LIVE_DATA.sourcing.kpis : null;
+  const pill = (v) => v==null?'<span class="pill flat">–</span>'
+    : v>=0?`<span class="pill up">+${v}%</span>`:`<span class="pill down">${v}%</span>`;
+  const fmt = (n) => n==null?'—':String(n);
+  el.innerHTML = `
+    <div class="kpi"><div class="lbl">Outreach This Month</div><div><div class="row"><span class="num">${fmt(k&&k.outreachThisMonth)}</span>${pill(k&&k.outreachMoM)}</div><div class="sub">creators contacted</div></div></div>
+    <div class="kpi"><div class="lbl" data-tip="Deals where Deal Closed Date falls in the selected month.">Deals Closed</div><div><div class="row"><span class="num">${fmt(k&&k.dealsClosed)}</span><span class="pill flat">–</span></div><div class="sub">${k?k.dealsRate+'% of outreach':'—'}</div></div></div>
+    <div class="kpi"><div class="lbl" data-tip="Unique creators with ≥1 AD-CREATIVE concept (task in Team Task Board) due this month. Includes creators sourced earlier — anyone we actually worked with.">Active Creators</div><div><div class="row"><span class="num">${fmt(k&&k.activeCreators)}</span>${pill(k&&k.activeCreatorsMoM)}</div><div class="sub">produced ≥1 concept this month</div></div></div>
+    <div class="kpi"><div class="lbl" data-tip="Snapshot of creators with PT Access Status = Active.">Partnership Access</div><div><div class="row"><span class="num">${fmt(k&&k.partnershipAccess)}</span><span class="pill flat">–</span></div><div class="sub">accounts with active access</div></div></div>`;
+}
+
+function renderConceptsKpis(){
+  const el=document.getElementById("conceptsKpis"); if(!el) return;
+  const k=LIVE_DATA?LIVE_DATA.concepts.kpis:null;
+  const pill=(v)=>v==null?'<span class="pill flat">–</span>':v>=0?`<span class="pill up">+${v}%</span>`:`<span class="pill down">${v}%</span>`;
+  el.innerHTML=`
+    <div class="kpi"><div class="lbl">Creator Concepts</div><div><div class="row"><span class="num">${k?k.conceptsThisMonth:'—'}</span>${pill(k&&k.conceptsMoM)}</div><div class="sub">finalized this month</div></div></div>
+    <div class="kpi"><div class="lbl" data-tip="Unique creators who produced ≥1 concept this month.">Total Creators</div><div><div class="row"><span class="num">${k?k.totalCreators:'—'}</span>${pill(k&&k.creatorsMoM)}</div><div class="sub">produced this month</div></div></div>
+    <div class="kpi"><div class="lbl">Avg Concepts / Creator</div><div><div class="row"><span class="num">${k?k.avgPerCreator:'—'}</span><span class="pill flat">1–6</span></div><div class="sub">${k?k.conceptsThisMonth+' ÷ '+k.totalCreators+' creators':''}</div></div></div>
+    <div class="kpi"><div class="lbl">Vertical vs Horizontal</div><div><div class="row"><span class="num">${k?k.vidPct+'%':'—'}</span><span class="pill flat">VID</span></div><div class="sub">${k?k.totalVid+' VID · '+k.totalTv+' TV (horizontal)':''}</div></div></div>`;
+}
+
+function renderProjKpis(){
+  const el=document.getElementById("projKpis"); if(!el) return;
+  const k=LIVE_DATA?LIVE_DATA.projections.kpis:null;
+  const fmtMoney=(n)=>n==null?'—':'$'+(n>=1000?(n/1000).toFixed(1)+'k':n);
+  el.innerHTML=`
+    <div class="kpi"><div class="lbl" data-tip="AD-CREATIVE tasks in Team Task Board · Status: New or Working On It · with a Creator assigned. Concepts being produced right now, expected to land next month.">Concepts Producing Right Now</div><div><div class="row"><span class="num">${k?k.conceptsCount:'—'}</span><span class="pill flat">→ Jun '26</span></div><div class="sub">waiting on creator delivery</div></div></div>
+    <div class="kpi"><div class="lbl" data-tip="Estimated payout for content currently in production. Sum of: filled Creator Rate from Notion + retainer $450 (Brandon, Mackenzie Studios) when empty + $230 estimate for the rest.">Projected Payout</div><div><div class="row"><span class="num">${fmtMoney(k&&k.projectedPayout)}</span><span class="pill flat">vs last mo —</span></div><div class="sub">to pay next month</div></div></div>
+    <div class="kpi"><div class="lbl" data-tip="Average rate per concept across all in production. Concepts at $0 (Not UGC tag) are excluded.">Average Concept Rate</div><div><div class="row"><span class="num">${k?'$'+k.avgRate:'—'}</span><span class="pill flat">$0–$500</span></div><div class="sub">excludes $0 concepts</div></div></div>
+    <div class="kpi"><div class="lbl">Creators Producing Right Now</div><div><div class="row"><span class="num">${k?k.creatorsInQueue:'—'}</span><span class="pill flat">unique</span></div><div class="sub">in production</div></div></div>`;
+  const cc=document.getElementById("projConceptsCount"); if(cc&&k) cc.textContent=k.conceptsCount;
+}
+
+function renderRosterHealth(){
+  if(!LIVE_DATA) return;
+  const h=LIVE_DATA.roster.health;
+  const set=(id,v)=>{const e=document.getElementById(id); if(e) e.textContent=v;};
+  set("rhTotal",h.total); set("rhNew","+"+h.newThisMonth); set("rhActive",h.ptActive); set("rhStagnant",h.stagnant);
+  set("rosterTotalSub",h.total);
+}
+
+function renderTierBoxes(){
+  if(!LIVE_DATA) return;
+  const t=LIVE_DATA.concepts.tiers;
+  const set=(id,v)=>{const e=document.getElementById(id); if(e) e.textContent=v;};
+  set("tierA",t.A); set("tierB",t.B); set("tierC",t.C); set("tierInactive",t.inactive);
+  set("tierAcross",LIVE_DATA.roster.health.total);
+}
+
+function renderReplyRate(){
+  if(!LIVE_DATA) return;
+  const r=LIVE_DATA.sourcing.replyRate;
+  const ring=document.getElementById("replyRing");
+  const C=490;
+  if(ring) ring.setAttribute("stroke-dashoffset",String(Math.round(C*(1-r.pct/100))));
+  const pct=document.getElementById("replyPct"); if(pct) pct.textContent=r.pct+"%";
+  const n=document.getElementById("replyN"); if(n) n.textContent=r.replied;
+  const m=document.getElementById("replyM"); if(m) m.textContent=r.emailed;
+  const cohort=LIVE_DATA.sourcing.funnel[0]?LIVE_DATA.sourcing.funnel[0].n:0;
+  const cl=document.getElementById("cohortLabel"); if(cl) cl.textContent="May '26 cohort · "+cohort+" added";
+  const cd=document.getElementById("cohortDesc"); if(cd) cd.textContent="Of the "+cohort+" creators we added to the database this month, where each one sits in the sourcing pipeline as of today.";
+}
+
+function loadData(d){
+  if(!d || d.error){
+    const lbl=document.getElementById("loaderLbl");
+    if(lbl){lbl.textContent="Couldn't load live data — " + ((d&&d.error)||"unknown error") + ". Showing static snapshot.";lbl.style.color="var(--neg)";}
+    setTimeout(()=>document.getElementById("loader").classList.add("hide"),2000);
+    renderAll();
+    return;
+  }
+  LIVE_DATA=d;
+  // Map API response → globals
+  FUNNEL=d.sourcing.funnel.map(s=>({s:s.stage,n:s.n,pct:s.pct,drop:s.drop,win:s.win}));
+  LOST=d.sourcing.lost.map(s=>({s:s.stage,n:s.n,pct:s.pct}));
+  OUTREACH = {
+    gender: { Male:[d.sourcing.outreachVolume.gender.Male||0,0,0,0,0,0,0,0],
+              Female:[d.sourcing.outreachVolume.gender.Female||0,0,0,0,0,0,0,0],
+              "Not set":[d.sourcing.outreachVolume.gender["Not set"]||0,0,0,0,0,0,0,0] },
+    age: { "25-35 years old":[d.sourcing.outreachVolume.age["25-35 years old"]||0,0,0,0,0,0,0,0],
+           "35-45 years old":[d.sourcing.outreachVolume.age["35-45 years old"]||0,0,0,0,0,0,0,0],
+           "45-60 years old":[d.sourcing.outreachVolume.age["45-60 years old"]||0,0,0,0,0,0,0,0],
+           "Not set":[d.sourcing.outreachVolume.age["Not set"]||0,0,0,0,0,0,0,0] },
+    months:["May '26","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+    colors:{ Male:"#5B7FA6", Female:"#B96B5A", "25-35 years old":"#6F9A77","35-45 years old":"#8E73B5","45-60 years old":"#C18A48","Not set":"#C8C8C0" }
+  };
+  NICHES=d.roster.niches;
+  TIERSORT=d.roster.tiers;
+  AGES=d.roster.ages;
+  PT_STATS={all:d.partnership.statsByGender.all, Male:d.partnership.statsByGender.Male, Female:d.partnership.statsByGender.Female};
+  PARTNERS=d.partnership.rosterRows;
+  IDLE_PARTNERS=d.partnership.idleRows;
+  TOPPROD=d.partnership.topProducers;
+  EXPIRING=d.partnership.expiringRows;
+  NO_PT_ACCESS=d.partnership.noPtRows;
+  THROUGHPUT=d.concepts.monthlyThroughput;
+  TOPCREATORS=d.concepts.topCreators;
+  CATS=d.concepts.cats;
+  CONCEPTS_REP=d.concepts.conceptsRotation;
+  PROJ_CATS=d.projections.cats;
+  PROJ_TOPCR=d.projections.topCreators;
+  PROJ_CONCEPTS=d.projections.rows.map(r=>[r.title,r.cat,r.creator,r.rate,r.source,r.scriptUrl,r.taskUrl,r.pt]);
+  renderAll();
+  document.getElementById("loader").classList.add("hide");
+  const ls=document.getElementById("lastsync");
+  if(ls){
+    const t=new Date(d.generatedAt);
+    const ago=Math.round((Date.now()-t.getTime())/60000);
+    ls.innerHTML=`Live · synced ${ago<=0?'just now':ago+' min ago'} <a href="#" onclick="forceRefresh();return false;" data-tip="Force a fresh pull from Notion (bypasses 15-min cache)">refresh ↗</a>`;
+  }
+}
+
+function forceRefresh(){
+  document.getElementById("loader").classList.remove("hide");
+  document.getElementById("loaderLbl").textContent="Refreshing from Notion…";
+  const s=document.createElement('script');
+  s.src=APPS_SCRIPT_URL + '?fresh=1&callback=loadData&_=' + Date.now();
+  document.body.appendChild(s);
+}
+
+// Bootstrap: inject JSONP script tag
+(function bootstrap(){
+  const s=document.createElement('script');
+  s.src=APPS_SCRIPT_URL + '?callback=loadData';
+  s.onerror=function(){
+    const lbl=document.getElementById("loaderLbl");
+    if(lbl){lbl.textContent="Couldn't reach live data API.";lbl.style.color="var(--neg)";}
+    setTimeout(()=>document.getElementById("loader").classList.add("hide"),1500);
+  };
+  document.body.appendChild(s);
+})();
 </script>
 </body>
 </html>
