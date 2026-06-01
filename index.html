@@ -126,9 +126,10 @@
 
 <div class="fbar">
   <div class="fgrp">
-    <span class="flabel" data-tip="Category is derived from the Team Task Board — the unique categories each creator has actually shot for.">Category</span>
+    <span class="flabel" data-tip="Filtra Roster, Partnership Access, Concepts y Projections a creators que filmaron en esa categoría. Sourcing Pipeline no se filtra porque los creators nuevos todavía no tienen categoría asignada.">Category</span>
     <div class="fdiv"></div>
-    <button class="fbtn on">All</button><button class="fbtn">EDC</button><button class="fbtn">Tech</button><button class="fbtn">Jewelry</button><button class="fbtn">Travel</button><button class="fbtn">Gut-Culture</button>
+    <button class="fbtn on" onclick="setCategory('All',this)">All</button><button class="fbtn" onclick="setCategory('Edc',this)">EDC</button><button class="fbtn" onclick="setCategory('Tech',this)">Tech</button><button class="fbtn" onclick="setCategory('Jewelry',this)">Jewelry</button><button class="fbtn" onclick="setCategory('Travel',this)">Travel</button><button class="fbtn" onclick="setCategory('Gut-Culture',this)">Gut-Culture</button>
+    <span id="catBusy" style="display:none;width:11px;height:11px;border:2px solid var(--border);border-top-color:var(--rust);border-radius:50%;animation:spin .7s linear infinite;margin-left:6px;"></span>
   </div>
 </div>
 
@@ -375,6 +376,7 @@
 <script>
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWtP6r3AQE609CvgJNlaXltTfL6J3nC_zi9RRuRf1e0CrpuK4bEUWKyy0a7AF7n58/exec";
 let LIVE_DATA = null;  // populated by loadData()
+let CATEGORY_FILTER = "All";  // current category filter (drives ?category= on fetch)
 
 let OUTREACH = {
   gender: { Male:[113,0,0,0,0,0,0,0], Female:[55,0,0,0,0,0,0,0], "Not set":[0,0,0,0,0,0,0,0] },
@@ -830,13 +832,20 @@ function sortProj(col){
   if(projSortCol===col)projSortDir*=-1; else {projSortCol=col;projSortDir=1;}
   renderProjConceptRows();
 }
+// Build a bar-fill with visible per-unit segments via repeating-linear-gradient.
+// `v` is the unit count; each segment is 100%/v wide, with a 1.5px white divider.
+function segBar(color, v){
+  if(v<=1) return `background:${color};`;
+  const step = 100/v;
+  return `background:${color};background-image:repeating-linear-gradient(to right, rgba(255,255,255,0) 0, rgba(255,255,255,0) calc(${step}% - 1.5px), rgba(255,255,255,0.55) calc(${step}% - 1.5px), rgba(255,255,255,0.55) ${step}%);`;
+}
 function renderProjections(){
   const maxC=PROJ_CATS[0][1];
-  document.getElementById("projCatBars").innerHTML=PROJ_CATS.map(([n,v,c],i)=>`<div class="bar-row" style="margin-bottom:9px;"><div class="top"><span style="font-weight:600;"><span style="color:var(--rust);font-weight:700;margin-right:6px;">${i+1}</span>${n}</span><span style="font-weight:700;">${v}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(v/maxC)*100}%;background:${c};"></div></div></div>`).join("");
+  document.getElementById("projCatBars").innerHTML=PROJ_CATS.map(([n,v,c],i)=>`<div class="bar-row" style="margin-bottom:9px;"><div class="top"><span style="font-weight:600;"><span style="color:var(--rust);font-weight:700;margin-right:6px;">${i+1}</span>${n}</span><span style="font-weight:700;">${v}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(v/maxC)*100}%;${segBar(c,v)}" data-tip="${v} concept${v===1?'':'s'}"></div></div></div>`).join("");
   const maxT=PROJ_TOPCR[0][1];
   document.getElementById("projTopCreators").innerHTML=PROJ_TOPCR.map((c,i)=>{
     const badge = c[2] ? (c[2]==="Active" ? ' <span style="display:inline-block;padding:1px 6px;border-radius:999px;font-size:9px;font-weight:700;background:#E6F4EA;color:var(--pos);margin-left:4px;">PT Active</span>' : ` <span style="display:inline-block;padding:1px 6px;border-radius:999px;font-size:9px;font-weight:700;background:#FFE8D8;color:var(--rust);margin-left:4px;" data-tip="Partnership access ${c[2]}">⚠ ${c[2].replace('Expiring ','exp ')}</span>`) : '';
-    return `<div class="bar-row" style="margin-bottom:9px;"><div class="top"><span style="font-weight:600;"><span style="color:${i<3?'var(--rust)':'var(--muted)'};font-weight:700;margin-right:6px;">${i+1}</span>${c[0]}${badge}</span><span style="font-weight:700;">${c[1]}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(c[1]/maxT)*100}%;background:var(--rust);"></div></div></div>`;
+    return `<div class="bar-row" style="margin-bottom:9px;"><div class="top"><span style="font-weight:600;"><span style="color:${i<3?'var(--rust)':'var(--muted)'};font-weight:700;margin-right:6px;">${i+1}</span>${c[0]}${badge}</span><span style="font-weight:700;">${c[1]}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(c[1]/maxT)*100}%;${segBar('var(--rust)',c[1])}" data-tip="${c[1]} concept${c[1]===1?'':'s'}"></div></div></div>`;
   }).join("");
   renderProjConceptRows();
 }
@@ -924,6 +933,7 @@ function loadData(d){
     const lbl=document.getElementById("loaderLbl");
     if(lbl){lbl.textContent="Couldn't load live data — " + ((d&&d.error)||"unknown error") + ". Showing static snapshot.";lbl.style.color="var(--neg)";}
     setTimeout(()=>document.getElementById("loader").classList.add("hide"),2000);
+    clearCatLoading();
     renderAll();
     return;
   }
@@ -960,6 +970,7 @@ function loadData(d){
   PROJ_CONCEPTS=d.projections.rows.map(r=>[r.title,r.cat,r.creator,r.rate,r.source,r.scriptUrl,r.taskUrl,r.pt]);
   renderAll();
   document.getElementById("loader").classList.add("hide");
+  clearCatLoading();
   const ls=document.getElementById("lastsync");
   if(ls){
     const t=new Date(d.generatedAt);
@@ -971,21 +982,70 @@ function loadData(d){
 function forceRefresh(){
   document.getElementById("loader").classList.remove("hide");
   document.getElementById("loaderLbl").textContent="Refreshing from Notion…";
-  const s=document.createElement('script');
-  s.src=APPS_SCRIPT_URL + '?fresh=1&callback=loadData&_=' + Date.now();
-  document.body.appendChild(s);
+  fetchData({fresh:true});
 }
 
-// Bootstrap: inject JSONP script tag
-(function bootstrap(){
+function fetchData(opts){
+  opts=opts||{};
+  const params=['callback=loadData'];
+  if(CATEGORY_FILTER && CATEGORY_FILTER!=="All") params.push('category='+encodeURIComponent(CATEGORY_FILTER));
+  if(opts.fresh) params.push('fresh=1');
+  params.push('_='+Date.now()); // cache-bust the browser
   const s=document.createElement('script');
-  s.src=APPS_SCRIPT_URL + '?callback=loadData';
+  s.src=APPS_SCRIPT_URL+'?'+params.join('&');
   s.onerror=function(){
+    const busy=document.getElementById("catBusy"); if(busy) busy.style.display="none";
     const lbl=document.getElementById("loaderLbl");
     if(lbl){lbl.textContent="Couldn't reach live data API.";lbl.style.color="var(--neg)";}
     setTimeout(()=>document.getElementById("loader").classList.add("hide"),1500);
   };
   document.body.appendChild(s);
+}
+
+function setCategory(cat, btn){
+  if(CATEGORY_FILTER===cat) return;
+  CATEGORY_FILTER=cat;
+  // Toggle button .on state
+  btn.parentElement.querySelectorAll(".fbtn").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+  // Show subtle spinner next to buttons
+  const busy=document.getElementById("catBusy"); if(busy) busy.style.display="inline-block";
+  // Dim the tab content while fetching
+  const w=document.querySelector(".wrap"); if(w){w.style.opacity="0.4";w.style.pointerEvents="none";}
+  // Update sourcing-not-applied banner
+  updateSourcingHint();
+  fetchData();
+}
+
+function updateSourcingHint(){
+  let hint=document.getElementById("sourcingCatHint");
+  const t1=document.getElementById("t1");
+  if(!t1) return;
+  if(CATEGORY_FILTER!=="All"){
+    if(!hint){
+      hint=document.createElement("div");
+      hint.id="sourcingCatHint";
+      hint.style.cssText="background:#FFF6E5;border:1px solid #E8C56B;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#7A5A1F;display:flex;align-items:center;gap:8px;";
+      hint.innerHTML='<span style="font-size:14px;">ⓘ</span><span>Category filter (<b id="sourcingCatLbl"></b>) doesn’t apply to Sourcing Pipeline. Outreach tracks newly added creators who don’t have a category assigned yet.</span>';
+      const sechdr=t1.querySelector(".sechdr");
+      if(sechdr) sechdr.parentNode.insertBefore(hint, sechdr.nextSibling);
+    }
+    const lbl=document.getElementById("sourcingCatLbl"); if(lbl) lbl.textContent=CATEGORY_FILTER;
+    hint.style.display="flex";
+  } else if(hint){
+    hint.style.display="none";
+  }
+}
+
+function clearCatLoading(){
+  const busy=document.getElementById("catBusy"); if(busy) busy.style.display="none";
+  const w=document.querySelector(".wrap"); if(w){w.style.opacity="";w.style.pointerEvents="";}
+  updateSourcingHint();
+}
+
+// Bootstrap: inject JSONP script tag
+(function bootstrap(){
+  fetchData();
 })();
 </script>
 </body>
