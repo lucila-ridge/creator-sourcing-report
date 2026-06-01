@@ -457,7 +457,13 @@ let IDLE_PARTNERS=[
   ["Marc Houston @houstonjpg","Male","Gaming","Apr 22 → Apr '27",null],
   ["Nick Castle @nickcastlecreates","Male","UGC","Aug '25 → Feb '26","⚠ access expired"]
 ];
-const CATCOLOR={EDC:"#5B7FA6",Jewelry:"#8E73B5",Tech:"#C18A48",Travel:"#6F9A77","Gut-Culture":"#B96B5A"};
+// Notion-matched category colors (case-insensitive lookup via catColor())
+const CATCOLOR={Edc:"#3F7050",Jewelry:"#9C7B33",Tech:"#7D7B72",Travel:"#4A7299","Gut-Culture":"#9F6047"};
+function catColor(name){
+  if(!name) return "var(--muted)";
+  const k=Object.keys(CATCOLOR).find(x=>x.toLowerCase()===String(name).toLowerCase());
+  return k?CATCOLOR[k]:"var(--muted)";
+}
 // [name, count, gender] · all 24 producing active partners
 let TOPPROD=[
   ["Brandon Romanchuk",9,"Male"],
@@ -579,7 +585,7 @@ let PROJ_CONCEPTS=[
   ["Concept: The Aerospace Standard","TRAVEL","Ben Horne",230,"avg","https://docs.google.com/document/d/1hij/edit","https://www.notion.so/ridgewallet/aero","Active"],
   ["Concept: The Two-Week Carry-On","TRAVEL","Ben Horne",230,"avg","https://docs.google.com/document/d/1klm/edit","https://www.notion.so/ridgewallet/twoweek","Active"]
 ];
-const CATCOLOR2={EDC:"#5B7FA6",TECH:"#C18A48",TRAVEL:"#6F9A77",JEWELRY:"#8E73B5","Gut-Culture":"#B96B5A"};
+const CATCOLOR2=CATCOLOR; // unified — kept as alias for back-compat
 let projSortCol=null,projSortDir=1;
 
 // ============ CUSTOM TOOLTIP SYSTEM ============
@@ -702,7 +708,7 @@ function renderNoPt(){
   tbody.innerHTML=filtered.map(([n,g,pt,niche,cats,c,mom])=>{
     const ptColor = pt==="Negotiating"?"#8A5A1F" : pt==="Per Video or Month"?"#2C5A8A" : pt==="No Access"?"var(--neg)" : pt==="Paused"?"#8A5A1F" : "var(--muted)";
     const ptBg = pt==="Negotiating"?"#FBE9D8" : pt==="Per Video or Month"?"#E6EEF7" : pt==="No Access"?"#FCE8E6" : pt==="Paused"?"#FBE9D8" : "var(--bone)";
-    const catsHtml = (cats||[]).map(ct=>`<span class="catpill" style="background:${CATCOLOR[ct]||'var(--muted)'};">${ct}</span>`).join("") || '<span class="muted">—</span>';
+    const catsHtml = (cats||[]).map(ct=>`<span class="catpill" style="background:${catColor(ct)};">${ct}</span>`).join("") || '<span class="muted">—</span>';
     let momHtml;
     if(mom===0) momHtml='<span class="muted" style="font-size:10px;">=</span>';
     else if(mom>0) momHtml=`<span style="color:var(--pos);font-weight:700;">▲ ${mom}</span>`;
@@ -770,7 +776,7 @@ function renderPartners(){
     });
   }
   document.getElementById("partnerRows").innerHTML=rows.map(p=>{const idle=p[4]===0;
-    const cats=p[3].map(c=>`<span class="catpill" style="background:${CATCOLOR[c]};">${c}</span>`).join("")||'<span class="muted">—</span>';
+    const cats=p[3].map(c=>`<span class="catpill" style="background:${catColor(c)};">${c}</span>`).join("")||'<span class="muted">—</span>';
     let mom=p[5];let momHtml;
     if(mom==='new')momHtml='<span class="muted" style="font-size:10px;">new</span>';
     else if(mom==='=' || mom==='0')momHtml='<span class="muted" style="font-size:10px;">=</span>';
@@ -785,7 +791,7 @@ function renderThroughput(){const max=80,chart=document.getElementById("throughp
 
 function renderTopCreators(){const max=TOPCREATORS[0][1];document.getElementById("topCreators").innerHTML=TOPCREATORS.map((c,i)=>`<div class="bar-row" style="margin-bottom:9px;"><div class="top"><span style="font-weight:600;"><span style="color:var(--rust);font-weight:700;margin-right:6px;">${i+1}</span>${c[0]}</span><span style="font-weight:700;">${c[1]}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(c[1]/max)*100}%;background:var(--rust);"></div></div></div>`).join("");}
 
-function renderCats(){const max=CATS[0][1];document.getElementById("catBars").innerHTML=CATS.map(([n,v,c],i)=>`<div class="bar-row" style="margin-bottom:9px;"><div class="top"><span style="font-weight:600;"><span style="color:var(--rust);font-weight:700;margin-right:6px;">${i+1}</span>${n}</span><span style="font-weight:700;">${v}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(v/max)*100}%;background:${c};"></div></div></div>`).join("");}
+function renderCats(){const max=CATS[0][1];document.getElementById("catBars").innerHTML=CATS.map(([n,v,c],i)=>`<div class="bar-row" style="margin-bottom:9px;"><div class="top"><span style="font-weight:600;"><span style="color:var(--rust);font-weight:700;margin-right:6px;">${i+1}</span>${n}</span><span style="font-weight:700;">${v}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(v/max)*100}%;background:${catColor(n)};"></div></div></div>`).join("");}
 
 function renderConcepts(){
   document.getElementById("conceptList").innerHTML=CONCEPTS_REP.filter(([t,c,fmt,url])=>!!url).map(([t,c,fmt,url])=>{
@@ -824,7 +830,7 @@ function renderProjConceptRows(){
   document.getElementById("projConceptRows").innerHTML=rows.map(c=>{
     const titleHtml = c[5] ? `<a href="${c[5]}" target="_blank" style="font-weight:600;color:var(--black);border-bottom:1px dotted var(--rust);" data-tip="Open script (Google Docs)">${c[0]}</a>` : `<span style="font-weight:600;">${c[0]}</span>`;
     const taskBtn = c[6] ? `<a href="${c[6]}" target="_blank" data-tip="Open task in Notion" style="display:inline-block;padding:3px 8px;border:1px solid var(--border);border-radius:4px;font-size:10px;color:var(--black);font-weight:600;text-decoration:none;background:#FAFAF7;">Go to task ↗</a>` : '<span class="muted" style="font-size:10px;">—</span>';
-    return `<tr><td>${titleHtml}</td><td><span class="catpill" style="background:${CATCOLOR2[c[1]]||'var(--muted)'};">${c[1]}</span></td><td>${c[2]}</td><td>${ptBadge(c[7])}</td><td class="r">${rateCell(c[3],c[4])}</td><td class="r">${taskBtn}</td></tr>`;
+    return `<tr><td>${titleHtml}</td><td><span class="catpill" style="background:${catColor(c[1])};">${c[1]}</span></td><td>${c[2]}</td><td>${ptBadge(c[7])}</td><td class="r">${rateCell(c[3],c[4])}</td><td class="r">${taskBtn}</td></tr>`;
   }).join("");
   ["sa0","sa1","sa2","sa3","sa7"].forEach(id=>{const el=document.getElementById(id);if(!el)return;const i=parseInt(id.slice(2),10);el.textContent=projSortCol===i?(projSortDir===1?"▲":"▼"):"⇅";el.style.opacity=projSortCol===i?"1":".4";});
 }
@@ -841,7 +847,7 @@ function segBar(color, v){
 }
 function renderProjections(){
   const maxC=PROJ_CATS[0][1];
-  document.getElementById("projCatBars").innerHTML=PROJ_CATS.map(([n,v,c],i)=>`<div class="bar-row" style="margin-bottom:9px;"><div class="top"><span style="font-weight:600;"><span style="color:var(--rust);font-weight:700;margin-right:6px;">${i+1}</span>${n}</span><span style="font-weight:700;">${v}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(v/maxC)*100}%;${segBar(c,v)}" data-tip="${v} concept${v===1?'':'s'}"></div></div></div>`).join("");
+  document.getElementById("projCatBars").innerHTML=PROJ_CATS.map(([n,v,c],i)=>`<div class="bar-row" style="margin-bottom:9px;"><div class="top"><span style="font-weight:600;"><span style="color:var(--rust);font-weight:700;margin-right:6px;">${i+1}</span>${n}</span><span style="font-weight:700;">${v}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(v/maxC)*100}%;${segBar(catColor(n),v)}" data-tip="${v} concept${v===1?'':'s'}"></div></div></div>`).join("");
   const maxT=PROJ_TOPCR[0][1];
   document.getElementById("projTopCreators").innerHTML=PROJ_TOPCR.map((c,i)=>{
     const badge = c[2] ? (c[2]==="Active" ? ' <span style="display:inline-block;padding:1px 6px;border-radius:999px;font-size:9px;font-weight:700;background:#E6F4EA;color:var(--pos);margin-left:4px;">PT Active</span>' : ` <span style="display:inline-block;padding:1px 6px;border-radius:999px;font-size:9px;font-weight:700;background:#FFE8D8;color:var(--rust);margin-left:4px;" data-tip="Partnership access ${c[2]}">⚠ ${c[2].replace('Expiring ','exp ')}</span>`) : '';
