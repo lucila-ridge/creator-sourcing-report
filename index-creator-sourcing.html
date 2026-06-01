@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Creator Sourcing Report — Preview v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@500;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --black:#1A1A18; --bone:#F0F0ED; --surface:#FFFFFF; --border:#D4D0C8;
+    --muted:#7A7F87; --sub:#4A5240; --rust:#C45220; --pos:#2D6A4F; --neg:#B83A1A;
+    --c1:#5B7FA6; --c2:#8E73B5; --c3:#C18A48; --c4:#6F9A77; --c5:#B96B5A; --c6:#4A5240;
+    --tierA:#C45220; --tierB:#D98A5E; --tierC:#E7C0A6; --tierInactive:#B8B4AA;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bone);font-family:'Barlow',sans-serif;color:var(--black);}
+  .cond{font-family:'Barlow Condensed',sans-serif;}
+  [data-tip]{cursor:help;}
+  [data-tip]:not(span):not(div){border-bottom:1px dotted var(--muted);}
+  .hdr{background:var(--black);height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:102;}
+  .hdr-l{display:flex;align-items:center;gap:18px;}
+  .logo{display:flex;align-items:center;gap:8px;}
+  .logo i{width:3px;height:22px;background:var(--rust);display:block;}
+  .logo span{font-size:16px;color:#fff;font-weight:800;letter-spacing:.12em;font-family:'Barlow Condensed',sans-serif;}
+  .hdr .sep{width:1px;height:20px;background:#3A3D42;}
+  .hdr .rt{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'Barlow Condensed',sans-serif;font-weight:500;}
+  .monthsel{background:var(--rust);color:#fff;padding:4px 12px;border-radius:2px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-family:'Barlow Condensed',sans-serif;font-weight:500;display:flex;align-items:center;gap:8px;border:none;cursor:pointer;}
+  .fbar{background:var(--surface);border-bottom:1px solid var(--border);padding:9px 24px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;position:sticky;top:50px;z-index:101;}
+  .fgrp{display:flex;align-items:center;gap:8px;}
+  .flabel{font-size:10px;color:var(--black);font-family:'Barlow Condensed',sans-serif;font-weight:800;text-transform:uppercase;letter-spacing:.08em;}
+  .fdiv{width:1px;height:16px;background:var(--border);}
+  .fbtn{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:2px;padding:3px 9px;font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:800;text-transform:uppercase;cursor:pointer;}
+  .fbtn.on{background:var(--black);color:#fff;border-color:var(--black);}
+  .nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;position:sticky;top:91px;z-index:100;}
+  .nav button{background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);padding:12px 20px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;margin-bottom:-1px;font-family:'Barlow Condensed',sans-serif;font-weight:500;transition:all .15s;}
+  .nav button.active{border-bottom-color:var(--rust);color:var(--black);}
+  .wrap{padding:22px 24px;max-width:1180px;margin:0 auto;}
+  .sechdr{border-bottom:2px solid var(--black);padding-bottom:12px;margin-bottom:18px;}
+  .sechdr h2{margin:0;font-size:22px;font-family:'Barlow Condensed',sans-serif;font-weight:800;letter-spacing:.02em;}
+  .sechdr p{margin:4px 0 0;color:var(--muted);font-size:12px;}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between;min-height:108px;}
+  .kpi .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;min-height:28px;}
+  .kpi .row{display:flex;align-items:baseline;gap:8px;}
+  .kpi .num{font-size:28px;font-weight:700;line-height:1;}
+  .kpi .sub{font-size:12px;color:var(--muted);margin-top:4px;}
+  .pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;}
+  .pill.up{background:#E6F4EA;color:var(--pos);}
+  .pill.down{background:#FCE8E6;color:var(--neg);}
+  .pill.flat{background:var(--bone);color:var(--muted);font-weight:700;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 22px;margin-bottom:14px;}
+  .card .ct{font-size:14px;font-weight:600;}
+  .card .cs{font-size:12px;color:var(--muted);}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;}
+  .row4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:14px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+  .scard{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;}
+  .scard.rust{border-left:3px solid var(--rust);}
+  .scard.alert{border-left:3px solid var(--neg);}
+  .scard .st{font-size:13px;font-weight:600;margin-bottom:2px;}
+  .scard .ss{font-size:11px;color:var(--muted);margin-bottom:14px;}
+  .bar-row{margin-bottom:8px;font-size:11px;}
+  .bar-row .top{display:flex;justify-content:space-between;margin-bottom:2px;}
+  .bar-track{height:12px;background:var(--bone);border-radius:2px;overflow:hidden;}
+  .bar-fill{height:100%;background:var(--c1);}
+  table.tbl{width:100%;border-collapse:collapse;font-size:11px;}
+  .tbl thead th{background:#2C3E50;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:9px;padding:8px 10px;text-align:left;}
+  .tbl thead th.sortable{cursor:pointer;user-select:none;}
+  .tbl thead th.sortable:hover{background:#3D5166;}
+  .sortar{font-size:9px;margin-left:4px;opacity:.4;}
+  .tbl thead th.r{text-align:right;}
+  .tbl tbody td{padding:8px 10px;border-bottom:.5px solid #E8E8E4;vertical-align:middle;}
+  .tbl tbody tr:nth-child(even){background:#FAFAF7;}
+  .tbl td.r{text-align:right;font-weight:700;}
+  .catpill{display:inline-block;padding:2px 7px;border-radius:999px;font-size:9px;font-weight:700;margin:1px 2px 1px 0;color:#fff;}
+  .muted{color:var(--muted);}
+  .hide{display:none;}
+  .toggle{display:flex;background:var(--bone);border-radius:5px;padding:2px;gap:2px;}
+  .toggle button{background:none;border:none;border-radius:3px;padding:5px 11px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Barlow',sans-serif;}
+  .toggle button.on{background:#fff;color:var(--black);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.08);}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;margin-top:10px;}
+  .legend .li{display:flex;align-items:center;gap:5px;}
+  .legend .sw{width:10px;height:10px;border-radius:2px;}
+  .chart{display:flex;align-items:flex-end;gap:5px;height:150px;padding-left:30px;position:relative;border-bottom:1px solid var(--border);}
+  .ytick{position:absolute;left:0;font-size:9px;color:var(--muted);}
+  .colstack{flex:1;display:flex;flex-direction:column;gap:1px;}
+  .xlabels{display:flex;gap:5px;padding-left:30px;margin-top:6px;}
+  .xlabels div{flex:1;text-align:center;font-size:10px;color:var(--muted);}
+  .wordcloud{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;justify-content:center;padding:24px 12px;line-height:1.5;}
+  .wordcloud span{font-weight:700;cursor:default;}
+  .concept-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:.5px solid #E8E8E4;font-size:12px;}
+  .rep-badge{background:var(--rust);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;min-width:28px;text-align:center;}
+  .vidcard{flex:0 0 150px;background:var(--bone);border-radius:6px;overflow:hidden;border:1px solid var(--border);}
+  .vidthumb{height:84px;background:linear-gradient(135deg,#2C3E50,#3D5166);display:flex;align-items:center;justify-content:center;color:#fff;}
+  .vidcard .vt{padding:7px 9px;font-size:10px;font-weight:600;line-height:1.3;}
+  a{color:var(--rust);text-decoration:none;}
+  .tipbox{position:fixed;background:#1A1A18;color:#fff;padding:8px 12px;border-radius:4px;font-size:11px;line-height:1.45;max-width:240px;pointer-events:none;opacity:0;transition:opacity .12s;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.25);}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-l">
+    <div class="logo"><i></i><span>RIDGE</span></div>
+    <div class="sep"></div>
+    <span class="rt">Creator Sourcing Report</span>
+    <button class="monthsel">May '26 ▼</button>
+  </div>
+  <span class="rt">Paid Social Team</span>
+</div>
+
+<div class="fbar">
+  <div class="fgrp">
+    <span class="flabel" data-tip="Category is derived from the Team Task Board — the unique categories each creator has actually shot for.">Category</span>
+    <div class="fdiv"></div>
+    <button class="fbtn on">All</button><button class="fbtn">EDC</button><button class="fbtn">Tech</button><button class="fbtn">Jewelry</button><button class="fbtn">Travel</button><button class="fbtn">Gut-Culture</button>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="active" data-tab="t1" onclick="showTab('t1')">Sourcing Pipeline</button>
+  <button data-tab="t2" onclick="showTab('t2')">Roster Composition</button>
+  <button data-tab="t3" onclick="showTab('t3')">Partnership Access</button>
+  <button data-tab="t4" onclick="showTab('t4')">Concepts</button>
+  <button data-tab="t5" onclick="showTab('t5')">Projections</button>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ TAB 1: SOURCING PIPELINE ============ -->
+  <div id="t1">
+    <div class="sechdr"><h2>Sourcing Pipeline</h2><p>Volume and progression through the outreach pipeline this month.</p></div>
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Outreach This Month</div><div class="row"><span class="num">168</span><span class="pill flat">–</span></div><div class="sub">creators contacted</div></div>
+      <div class="kpi"><div class="lbl" data-tip="Deals where Deal Closed Date falls in the selected month.">Deals Closed</div><div class="row"><span class="num">24</span><span class="pill flat">–</span></div><div class="sub">14% of outreach</div></div>
+      <div class="kpi"><div class="lbl" data-tip="Unique creators with ≥1 AD-CREATIVE concept (task in Team Task Board) due this month. Includes creators sourced earlier — anyone we actually worked with.">Active Creators</div><div class="row"><span class="num">43</span><span class="pill up">+19%</span></div><div class="sub">produced ≥1 concept this month</div></div>
+      <div class="kpi"><div class="lbl" data-tip="Average partnerships active during the month (PT Access Status = Active across all days). Avoids fluctuations from snapshot-at-open.">Partnership Access</div><div class="row"><span class="num">39</span><span class="pill flat">–</span></div><div class="sub">avg active during the month</div></div>
+    </div>
+
+    <div class="card">
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;align-items:start;">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;"><div class="ct">Sourcing Funnel</div><div class="cs" data-tip="Cohort = creators added to the database this month (by Created time). Stage = their current Outreach Status. Pass/Ghosted = added this month, currently lost.">May '26 cohort · 168 added · ⓘ</div></div>
+          <div class="cs" style="margin-bottom:16px;">Of the 168 creators we added to the database this month, where each one sits in the sourcing pipeline as of today.</div>
+          <div id="funnel"></div>
+          <div style="margin-top:16px;padding-top:14px;border-top:.5px solid var(--border);">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:8px;">Lost in cohort</div>
+            <div id="funnelLost"></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0;">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:14px;text-align:center;" data-tip="Of the 104 creators we emailed this month, how many wrote back.">Reply Rate ⓘ</div>
+          <svg viewBox="0 0 200 200" style="width:180px;display:block;">
+            <circle cx="100" cy="100" r="78" fill="none" stroke="#E8E8E4" stroke-width="14"/>
+            <circle cx="100" cy="100" r="78" fill="none" stroke="var(--rust)" stroke-width="14" stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="274" transform="rotate(-90 100 100)"/>
+            <text x="100" y="98" text-anchor="middle" dominant-baseline="central" font-size="40" font-weight="700" fill="var(--black)" font-family="'Barlow',sans-serif">44%</text>
+            <text x="100" y="138" text-anchor="middle" font-size="9" fill="var(--muted)" letter-spacing="2" font-family="'Barlow',sans-serif">REPLIED</text>
+          </svg>
+          <div style="margin-top:14px;text-align:center;font-size:11px;color:var(--muted);line-height:1.5;">46 replies from <b style="color:var(--black);">104</b> emails sent</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card rust" style="border-left:3px solid var(--rust);">
+      <div style="font-size:10px;color:var(--rust);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:8px;">Monthly Insight · Sourcing-focused</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;font-size:12px;line-height:1.55;">
+        <div>• <b>168 creators</b> added this month — first month with rich tracking, base of the cohort.</div>
+        <div>• Reply rate <b>44%</b> (46 / 104 emailed) — solid first-month signal, watch trend in June.</div>
+        <div>• Funnel bottleneck at <b>Outreached → Replied</b> (-56%): biggest drop, many silent after first email.</div>
+        <div>• Active Creators up <b style="color:var(--pos);">+19% MoM</b> (43 vs 36 in April) — TTB throughput growing.</div>
+        <div>• Projection: <b style="color:var(--rust);">33 concepts</b> coming next month, ~<b>$8.0k</b> projected payout (Working On It in TTB).</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+        <div class="ct">Monthly Outreach Volume</div>
+        <div class="toggle"><button class="on" onclick="setOutreachMode('gender',this)">By Gender</button><button onclick="setOutreachMode('age',this)">By Age</button></div>
+      </div>
+      <div class="chart" id="outreachChart"></div>
+      <div class="xlabels" id="outreachX"></div>
+      <div class="legend" id="outreachLegend"></div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 2: ROSTER COMPOSITION ============ -->
+  <div id="t2" class="hide">
+    <div class="sechdr"><h2>Roster Composition</h2><p>Where the 354 creators in our roster sit across niche, tier, demographics, and persona. All-time snapshot.</p></div>
+
+    <div class="row2">
+      <div class="card" style="margin-bottom:0;">
+        <div class="ct" style="margin-bottom:2px;">By Niche</div>
+        <div class="cs" style="margin-bottom:8px;">what describes who they are · multi-tag · hover for exact count</div>
+        <div id="nicheTags" style="display:flex;flex-wrap:wrap;gap:6px;padding:14px 4px 4px;align-items:center;"></div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="ct" style="margin-bottom:2px;">By Format Style <span class="muted" style="font-size:10px;font-weight:400;">· new property, populating</span></div>
+        <div class="cs" style="margin-bottom:8px;">what describes the video format · Yapping, Unboxing, Street Interview, etc.</div>
+        <div id="formatTags" style="display:flex;flex-wrap:wrap;gap:6px;padding:14px 4px 4px;align-items:center;"></div>
+      </div>
+    </div>
+
+    <div class="row4">
+      <div class="scard"><div class="st">By Follower Tier</div><div class="ss">Instagram reach · low to high</div><div id="tierBars"></div></div>
+      <div class="scard"><div class="st">By Age Range</div><div class="ss">years old</div><div style="margin-top:8px;" id="ageBars"></div></div>
+      <div class="scard"><div class="st">By Gender</div><div class="ss">binary distribution</div><div id="genderDonut" style="text-align:center;margin-top:8px;"></div></div>
+      <div class="scard"><div class="st">By Persona <span class="muted" style="font-weight:400;font-size:10px;">· pending list</span></div><div class="ss">archetype assignment (auto)</div><div style="margin-top:8px;" id="personaBars"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="ct" style="margin-bottom:2px;">Roster Health</div>
+      <div class="cs" style="margin-bottom:14px;">Quick read on whether the pool is growing and healthy</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+        <div><div style="font-size:28px;font-weight:700;">354</div><div style="font-size:11px;color:var(--muted);">total roster</div></div>
+        <div><div style="font-size:28px;font-weight:700;color:var(--pos);">+168</div><div style="font-size:11px;color:var(--muted);">added this month</div></div>
+        <div><div style="font-size:28px;font-weight:700;">39</div><div style="font-size:11px;color:var(--muted);">with active access</div></div>
+        <div><div style="font-size:28px;font-weight:700;color:var(--neg);">52</div><div style="font-size:11px;color:var(--muted);" data-tip="Creators who had AD-CREATIVE tasks before but none in the last 6 months.">stagnant · 6mo idle</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 3: PARTNERSHIP ACCESS ============ -->
+  <div id="t3" class="hide">
+    <div class="sechdr" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;">
+      <div><h2>Partnership Access</h2><p>Creators with active paid-ad access (Meta) and how much of that access we're actually using.</p></div>
+      <div style="display:flex;align-items:center;gap:8px;padding-bottom:4px;">
+        <span class="flabel">Gender</span>
+        <div class="fdiv"></div>
+        <button class="fbtn on" onclick="setPartnerGender('all',this)">All <span style="opacity:.55;">39</span></button>
+        <button class="fbtn" onclick="setPartnerGender('Male',this)">Male <span style="opacity:.55;">24</span></button>
+        <button class="fbtn" onclick="setPartnerGender('Female',this)">Female <span style="opacity:.55;">13</span></button>
+      </div>
+    </div>
+    <div class="kpis" id="ptKpis"></div>
+
+    <div class="row3">
+      <div class="scard alert">
+        <div style="font-size:11px;color:var(--neg);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:700;">⚠ Idle Partners <span id="idleCount" style="background:var(--neg);color:#fff;padding:1px 6px;border-radius:999px;font-size:10px;margin-left:4px;">15</span></div>
+        <div style="font-size:11px;line-height:1.5;margin-bottom:10px;">Active partnership access but <b>0 concepts</b> this month. Some may actually be inactive — check data quality flags.</div>
+        <div style="max-height:200px;overflow-y:auto;border-top:.5px solid #F4D5CC;padding-top:8px;" id="idleList"></div>
+      </div>
+      <div class="scard"><div class="st" style="margin-bottom:12px;">Top Producers <span class="muted" style="font-weight:400;font-size:10px;">· this month</span></div><div id="topProducers"></div></div>
+      <div class="scard"><div class="st" style="margin-bottom:10px;">Access expiring soon</div>
+        <div id="expiringList" style="font-size:11px;display:flex;flex-direction:column;gap:9px;"></div>
+      </div>
+    </div>
+
+    <div class="scard" style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;"><div class="st">Active Partnership Roster</div><span class="ss" style="margin:0;">click column header to sort · respects Gender filter above</span></div>
+      <div style="max-height:340px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;">
+      <table class="tbl"><thead style="position:sticky;top:0;z-index:2;"><tr>
+        <th class="sortable" onclick="sortPartners(0)">Creator <span class="sortar" id="psa0">⇅</span></th>
+        <th class="sortable" onclick="sortPartners(2)">Niche <span class="sortar" id="psa2">⇅</span></th>
+        <th class="sortable" onclick="sortPartners(3)">Categories <span class="sortar" id="psa3">⇅</span></th>
+        <th class="sortable r" onclick="sortPartners(4)">Concepts <span class="sortar" id="psa4">⇅</span></th>
+        <th class="sortable r" onclick="sortPartners(5)">vs last month <span class="sortar" id="psa5">⇅</span></th>
+      </tr></thead><tbody id="partnerRows"></tbody></table>
+      </div>
+    </div>
+
+    <div class="scard" style="border-left:3px solid var(--c3);">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+        <div class="st">Creators Producing Without Partnership Access</div>
+        <span id="noPtCount" class="muted" style="font-size:11px;">19 creators</span>
+      </div>
+      <div class="ss">Creators with concepts this month but PT Access Status is not "Active" — opportunity to open access or check why they aren't whitelisted.</div>
+      <div style="max-height:340px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;margin-top:10px;">
+        <table class="tbl"><thead style="position:sticky;top:0;z-index:2;"><tr>
+          <th>Creator</th>
+          <th>Niche</th>
+          <th>Categories</th>
+          <th>PT Status</th>
+          <th class="r">Concepts</th>
+          <th class="r">vs last month</th>
+        </tr></thead><tbody id="noPtRows"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 4: CONCEPTS ============ -->
+  <div id="t4" class="hide">
+    <div class="sechdr"><h2>Concepts</h2><p>Creator tiering by usage, throughput, and the actual concepts produced this month.</p></div>
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Creator Concepts</div><div class="row"><span class="num">72</span><span class="pill up">+22%</span></div><div class="sub">finalized this month</div></div>
+      <div class="kpi"><div class="lbl" data-tip="Unique creators who produced ≥1 concept this month.">Total Creators</div><div class="row"><span class="num">43</span><span class="pill up">+19%</span></div><div class="sub">produced this month</div></div>
+      <div class="kpi"><div class="lbl">Avg Concepts / Creator</div><div class="row"><span class="num">1.7</span><span class="pill flat">1–6</span></div><div class="sub">72 ÷ 43 creators</div></div>
+      <div class="kpi"><div class="lbl">Vertical vs Horizontal</div><div class="row"><span class="num">89%</span><span class="pill flat">VID</span></div><div class="sub">756 VID · 86 TV (horizontal)</div></div>
+    </div>
+
+    <div class="card">
+      <div class="ct" style="margin-bottom:2px;">Creator Tiers</div>
+      <div class="cs" style="margin-bottom:14px;">Based on concepts produced in the last 6 months</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+        <div style="border:1px solid var(--border);border-left:4px solid var(--tierA);border-radius:8px;padding:14px 16px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;font-weight:700;color:var(--tierA);">Tier A</span><span style="font-size:30px;font-weight:700;line-height:1;">6</span></div>
+          <div data-tip="Tier A: ≥10 concepts in the last 6 months." style="font-size:11px;color:var(--muted);margin-top:6px;">Go-to creators — reliable, high-volume, we come back constantly ⓘ</div>
+        </div>
+        <div style="border:1px solid var(--border);border-left:4px solid var(--tierB);border-radius:8px;padding:14px 16px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;font-weight:700;color:var(--tierB);">Tier B</span><span style="font-size:30px;font-weight:700;line-height:1;">16</span></div>
+          <div data-tip="Tier B: 3–9 concepts in the last 6 months." style="font-size:11px;color:var(--muted);margin-top:6px;">Solid, dependable, used regularly ⓘ</div>
+        </div>
+        <div style="border:1px solid var(--border);border-left:4px solid var(--tierC);border-radius:8px;padding:14px 16px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;font-weight:700;color:#B07A4A;">Tier C</span><span style="font-size:30px;font-weight:700;line-height:1;">44</span></div>
+          <div data-tip="Tier C: 1–2 concepts in the last 6 months." style="font-size:11px;color:var(--muted);margin-top:6px;">Occasional, known and reachable but rarely used ⓘ</div>
+        </div>
+        <div style="border:1px solid var(--border);border-left:4px solid var(--tierInactive);border-radius:8px;padding:14px 16px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;font-weight:700;color:var(--muted);">Inactive</span><span style="font-size:30px;font-weight:700;line-height:1;color:var(--muted);">288</span></div>
+          <div data-tip="Inactive: no concepts in the last 6 months." style="font-size:11px;color:var(--muted);margin-top:6px;">Sourced but not producing right now ⓘ</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct" style="margin-bottom:2px;">Concepts Finalized</div>
+      <div class="cs" data-tip="TTB Status = Done means editing finished and handed to media buyers." style="margin-bottom:16px;">Status = Done · handed to media buyers · ⓘ</div>
+      <div class="chart" id="throughputChart"></div>
+      <div class="xlabels" id="throughputX"></div>
+    </div>
+
+    <div class="row2">
+      <div class="scard"><div class="st" style="margin-bottom:2px;">Top Creators</div><div class="ss">concepts produced · last 6 months</div><div id="topCreators"></div></div>
+      <div class="scard"><div class="st" style="margin-bottom:2px;">Top Categories</div><div class="ss">content we shot most · last 6 months</div><div id="catBars"></div></div>
+    </div>
+
+    <div class="scard">
+      <div class="st" style="margin-bottom:2px;">Concepts in Rotation</div>
+      <div class="ss">same script sent to multiple creators · click title to open script</div>
+      <div id="conceptList"></div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 5: PROJECTIONS ============ -->
+  <div id="t5" class="hide">
+    <div class="sechdr"><h2>Projections</h2><p>What's coming next month, based on AD-CREATIVE tasks currently in Working On It in the Team Task Board.</p></div>
+    <div class="kpis">
+      <div class="kpi"><div class="lbl" data-tip="AD-CREATIVE tasks in Team Task Board · Status: New or Working On It · with a Creator assigned. Concepts being produced right now, expected to land next month.">Concepts Producing Right Now</div><div><div class="row"><span class="num">55</span><span class="pill flat">→ Jun '26</span></div><div class="sub">waiting on creator delivery</div></div></div>
+      <div class="kpi"><div class="lbl" data-tip="Estimated payout for content currently in production — what we'll pay once these concepts are delivered next month. Sum across the 55 tasks: filled Creator Rate from Notion + retainer $450 (Brandon, Mackenzie Studios) when empty + $230 estimate for the rest.">Projected Payout</div><div><div class="row"><span class="num">$15.2k</span><span class="pill flat">vs last mo —</span></div><div class="sub">to pay next month</div></div></div>
+      <div class="kpi"><div class="lbl" data-tip="Average rate per concept across the 55 in production. Concepts at $0 (Not UGC tag) are excluded from this average so they don't artificially drag it down.">Average Concept Rate</div><div><div class="row"><span class="num">$276</span><span class="pill flat">$0–$500</span></div><div class="sub">excludes $0 concepts</div></div></div>
+      <div class="kpi"><div class="lbl">Creators Producing Right Now</div><div><div class="row"><span class="num">26</span><span class="pill flat">unique</span></div><div class="sub">in production</div></div></div>
+    </div>
+
+    <div class="row2">
+      <div class="scard"><div class="st" style="margin-bottom:2px;">By Category</div><div class="ss">where the upcoming concepts will land</div><div id="projCatBars"></div></div>
+      <div class="scard"><div class="st" style="margin-bottom:2px;">Top Creators in Queue</div><div class="ss">who has most concepts in flight</div><div id="projTopCreators"></div></div>
+    </div>
+
+    <div class="scard">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;"><div class="st">Concepts in Production</div><span class="ss" style="margin:0;">55 concepts · click column header to sort · click title to open script · button opens task in Notion</span></div>
+      <div style="max-height:420px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;margin-top:8px;">
+      <table class="tbl"><thead style="position:sticky;top:0;z-index:2;"><tr>
+        <th class="sortable" data-col="0" onclick="sortProj(0)">Concept Title <span class="sortar" id="sa0">⇅</span></th>
+        <th class="sortable" data-col="1" onclick="sortProj(1)">Cat. <span class="sortar" id="sa1">⇅</span></th>
+        <th class="sortable" data-col="2" onclick="sortProj(2)">Creator <span class="sortar" id="sa2">⇅</span></th>
+        <th class="sortable" data-col="7" onclick="sortProj(7)">PT <span class="sortar" id="sa7">⇅</span></th>
+        <th class="sortable r" data-col="3" onclick="sortProj(3)">Rate <span class="sortar" id="sa3">⇅</span></th>
+        <th class="r" style="text-align:right;">Task</th>
+      </tr></thead><tbody id="projConceptRows"></tbody></table>
+      </div>
+    </div>
+
+    <div class="card rust" style="border-left:3px solid var(--rust);margin-top:14px;">
+      <div style="font-size:10px;color:var(--rust);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:8px;">How the payout is calculated</div>
+      <div style="font-size:12px;line-height:1.65;">Pulled from the Team Task Board filtered to AD-CREATIVE tasks with a creator assigned, currently in <b>New</b> or <b>Working On It</b>. Stage isn't part of the filter — it shifts once media buyers pick up the task. For each of the 55 tasks: filled Creator Rate is used as-is (including $0 for Not UGC) · retainer creators (Brandon Romanchuk, Mackenzie Studios) → $450 when empty · remaining empty → $230 estimate. Average ($276) excludes $0 entries so they don't pull it down. Filling rates in Notion would make this exact.</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="tipbox" id="tipbox"></div>
+
+<script>
+const OUTREACH = {
+  gender: { Male:[113,0,0,0,0,0,0,0], Female:[55,0,0,0,0,0,0,0], "Not set":[0,0,0,0,0,0,0,0] },
+  age: { "25-35 years old":[110,0,0,0,0,0,0,0], "35-45 years old":[33,0,0,0,0,0,0,0], "45-60 years old":[8,0,0,0,0,0,0,0], "Not set":[17,0,0,0,0,0,0,0] },
+  months:["May '26","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+  colors:{ Male:"#5B7FA6", Female:"#B96B5A", "25-35 years old":"#6F9A77","35-45 years old":"#8E73B5","45-60 years old":"#C18A48","Not set":"#C8C8C0" }
+};
+const FUNNEL=[{s:"Prospect",n:168,pct:100,drop:null},{s:"Approved Int.",n:137,pct:82,drop:-18},{s:"Outreached",n:104,pct:62,drop:-24},{s:"Replied",n:46,pct:27,drop:-56},{s:"Negotiating",n:36,pct:21,drop:-22},{s:"Deal Closed",n:31,pct:18,drop:null,win:true}];
+const LOST=[{s:"Pass",n:11,pct:7},{s:"Ghosted",n:0,pct:0}];
+const NICHES=[["UGC",109],["Lifestyle",85],["Content Creator",43],["Wives/Moms",39],["Surf",36],["Tech",30],["Fitness",19],["Not UGC",17],["Family Creators",14],["Outdoorsy",11]];
+const FORMAT_STYLES=[["Unboxing",24],["Yapping",18],["Street Interview",12],["Tutorial",9],["Lifestyle Skit",7],["Voiceover",4]];
+const TIERSORT=[["Nano (<10k)",81,"46%"],["Micro (10–100k)",79,"45%"],["Mid (100–500k)",13,"7%"],["Macro (500k–1M)",0,"0%"],["Mega (1M+)",0,"0%"]];
+const AGES=[["25 – 35",197,"100%"],["35 – 45",59,"30%"],["45 – 60",15,"8%"],["(not set)",83,"42%"]];
+const PERSONAS=[["Lifestyle/Creator",72,"100%"],["Family Man",47,"65%"],["Outdoorsman",38,"53%"],["Mom-type",28,"39%"],["Gearhead",22,"31%"],["Tech/Gamer",15,"21%"],["Pro / Uniform",12,"17%"],["(Unassigned)",120,"100%"]];
+// [name, handle, niche, categories[], concepts, momDelta, gender]  ·  all 39 active partners
+const PARTNERS=[
+  ["Ben Horne","@occupiedliving","UGC",["EDC","Jewelry","Tech","Travel"],9,"new","Male"],
+  ["Brandon Romanchuk","@currentspaces","Premium EDC",["EDC","Jewelry","Tech","Travel"],9,"+6","Male"],
+  ["Jon Lavallee","@jon.lava","Premium EDC",["EDC","Jewelry","Tech","Travel"],9,"+7","Male"],
+  ["Daniel Kane","","Not UGC",["EDC","Jewelry","Tech","Travel"],5,"+3","Male"],
+  ["David Joseph","@dadlifewithdavey","—",["EDC"],5,"+4","Male"],
+  ["Keeley Mazurek","","Wives/Moms",["EDC","Jewelry","Tech","Travel"],5,"+4","Female"],
+  ["Khadeem Lewis","@kd.roo","Street Interview",["EDC"],3,"new","Male"],
+  ["Ramzy","@ramzyf_official","Military",["EDC","Jewelry","Travel"],3,"new","Male"],
+  ["Dylan Harreld","@dylanharreld","—",["EDC","Tech"],2,"new","Male"],
+  ["Gabriel Saint Elien","@nxlgabe","UGC",["EDC","Tech","Travel"],2,"new","Male"],
+  ["Lazar","","—",["EDC","Jewelry","Tech","Travel"],2,"-2","Male"],
+  ["Nikoline Krog Oxfeldt","@ugcwithniko","UGC",["EDC","Jewelry","Tech"],2,"+1","Female"],
+  ["Roby Brown","@robymakesvideos","Older Guys",["EDC","Gut-Culture","Jewelry","Tech","Travel"],2,"-3","Male"],
+  ["Sarah Franz","@sarahfranzlife","Wives/Moms",["EDC","Jewelry","Tech"],2,"+1","Female"],
+  ["Sierra Bowden","@realSierraJohnson","Young Mom",["EDC","Tech"],2,"=","Female"],
+  ["Zak Brahmbhatt","@zakbcreates","UGC",["EDC","Jewelry","Tech","Travel"],2,"-1","Male"],
+  ["Brittany Daniels","@brittanymdaniels","UGC",["EDC"],1,"new","Female"],
+  ["Connor Rodriguez","","Content Creator",["EDC","Jewelry"],1,"-1","Male"],
+  ["Jacob Hatch","@jacobtylerhatch","UGC",["EDC"],1,"new","—"],
+  ["Lauren Granara","@laugranara","Wives/Moms",["Jewelry"],1,"new","Female"],
+  ["Mike Mazurek","@coachmikemazurek","Fitness",["EDC","Gut-Culture","Jewelry"],1,"new","Male"],
+  ["Rod Herrenbruck","","Older Guys",["EDC","Tech"],1,"=","Male"],
+  ["Sara Singh","@creativelysaraugc","UGC",["EDC","Jewelry"],1,"new","Female"],
+  ["Yari R","@yacaro","—",["Jewelry"],1,"new","Female"],
+  ["Angela Zhou","@barsoapang","Tech",[],0,"=","Female"],
+  ["Benjamin - Mackenzie Studio Works","","—",["EDC","Jewelry","Tech","Travel"],0,"-3","Male"],
+  ["Carly Shasho","@carlyshasho","Content Creator",["EDC","Jewelry"],0,"-1","Female"],
+  ["Cole Pulsipher","@colsipher","—",[],0,"=","Male"],
+  ["Edwin Sarkissian","@edwinsarkissian","—",["Tech"],0,"=","Male"],
+  ["Jade Riles","@visualperfectionllc","Car Mechanic",["EDC","Tech"],0,"=","Male"],
+  ["Jennifer Cochnauer","@houseofjenugc","UGC",[],0,"=","Female"],
+  ["Joel Copple","","—",[],0,"=","Male"],
+  ["Joshua Abel","@joshuaa_ugc_creator","UGC",[],0,"=","Male"],
+  ["Karnitas","@karnitas.evox","—",["EDC"],0,"=","Female"],
+  ["Lloyd Strickland","","Cowboy",["EDC","Travel"],0,"=","Male"],
+  ["Maddy Garret","@maddyoutdoors.coach","Outdoorsy",["EDC"],0,"=","Female"],
+  ["Marc Houston","@houstonjpg","Gaming",["EDC","Tech"],0,"-2","Male"],
+  ["Nick Castle","@nickcastlecreates","UGC",["EDC","Jewelry","Travel"],0,"=","Male"]
+];
+let partnerGenderFilter="all";
+// Gender-filtered KPI stats for Partnership Access tab
+const PT_STATS={
+  all:    {active:39, producing:24, idle:15, utilPct:62, done:47, progress:22, total:69, avg:"2.9"},
+  Male:   {active:24, producing:15, idle:9,  utilPct:62, done:34, progress:19, total:53, avg:"3.5"},
+  Female: {active:13, producing:8,  idle:5,  utilPct:62, done:13, progress:2,  total:15, avg:"1.9"}
+};
+// Real idle partner list — [name, gender, niche, access window, flag]
+const IDLE_PARTNERS=[
+  ["Angela Zhou @barsoapang","Female","Tech","no dates set",null],
+  ["Benjamin - Mackenzie Studio Works","Male","—","no dates set",null],
+  ["Carly Shasho @carlyshasho","Female","Content Creator","no dates set",null],
+  ["Cole Pulsipher @colsipher","Male","—","no dates set",null],
+  ["Edwin Sarkissian @edwinsarkissian","Male","—","no dates set",null],
+  ["Jade Riles @visualperfectionllc","Male","Car Mechanic","no dates set",null],
+  ["Jennifer Cochnauer @houseofjenugc","Female","UGC","May 25 → open","new partner"],
+  ["Joel Copple","Male","—","no dates set",null],
+  ["Joshua Abel @joshuaa_ugc_creator","Male","UGC","May 25 → open","new partner"],
+  ["Karnitas @karnitas.evox","Female","—","no dates set",null],
+  ["Lauren Granara @laugranara","—","—","no dates set",null],
+  ["Lloyd Strickland","Male","Cowboy","no dates set",null],
+  ["Maddy Garret @maddyoutdoors.coach","Female","Outdoorsy","no dates set",null],
+  ["Marc Houston @houstonjpg","Male","Gaming","Apr 22 → Apr '27",null],
+  ["Nick Castle @nickcastlecreates","Male","UGC","Aug '25 → Feb '26","⚠ access expired"]
+];
+const CATCOLOR={EDC:"#5B7FA6",Jewelry:"#8E73B5",Tech:"#C18A48",Travel:"#6F9A77","Gut-Culture":"#B96B5A"};
+// [name, count, gender] · all 24 producing active partners
+const TOPPROD=[
+  ["Brandon Romanchuk",9,"Male"],
+  ["Jon Lavallee",9,"Male"],
+  ["Ben Horne",9,"Male"],
+  ["Daniel Kane",5,"Male"],
+  ["David Joseph",5,"Male"],
+  ["Keeley Mazurek",5,"Female"],
+  ["Khadeem Lewis",3,"Male"],
+  ["Ramzy",3,"Male"],
+  ["Lazar",2,"Male"],
+  ["Sierra Bowden",2,"Female"],
+  ["Dylan Harreld",2,"Male"],
+  ["Zak Brahmbhatt",2,"Male"],
+  ["Sarah Franz",2,"Female"],
+  ["Roby Brown",2,"Male"],
+  ["Gabriel Saint Elien",2,"Male"],
+  ["Nikoline Krog",2,"Female"],
+  ["Brittany Daniels",1,"Female"],
+  ["Sara Singh",1,"Female"],
+  ["Jacob Hatch",1,"—"],
+  ["Yari R",1,"Female"],
+  ["Connor Rodriguez",1,"Male"],
+  ["Lauren Granara",1,"Female"],
+  ["Rod Herrenbruck",1,"Male"],
+  ["Mike Mazurek",1,"Male"]
+];
+// [name, gender, ptStatus, niche, categories[], concepts, momDelta]
+const NO_PT_ACCESS=[
+  ["Marques Brownlee @mkbhd","Male","Negotiating","Not UGC",["EDC","Tech"],7,-8],
+  ["Jessalyn Tester @jessalyn.ugc","Female","Per Video or Month","Wives/Moms",["EDC","Tech"],4,+2],
+  ["Nicole Webb","Female","Per Video or Month","UGC",["EDC","Jewelry","Tech"],3,+2],
+  ["BRAND CONTENT","—","Not started","—",["EDC"],2,-2],
+  ["Charlotte van der Wee","Female","Not started","UGC",["Tech"],2,+2],
+  ["Justin Davis @ugcwithjustin","Male","Not started","—",["EDC"],2,+2],
+  ["Elizabeth Cutler @elizabethxcutler","Female","Per Video or Month","Content Creator",["EDC","Tech"],2,+2],
+  ["ICON","—","Not started","—",["EDC"],2,+2],
+  ["Olivia Mayo @itsoliviamayo","Female","No Access","Content Creator",["Jewelry","Tech"],2,+1],
+  ["Lauren Mueller @its.lauren.hunt","Female","Paused","Wife",["EDC","Jewelry"],2,-3],
+  ["Brennan Mueller","Male","Not started","UGC",["Tech","Travel"],2,+2],
+  ["Erica Giambrone @erica.creates.ugc","Female","Not started","UGC",["EDC"],1,+1],
+  ["Lauren Mueller (husband)","Male","Not started","—",["EDC"],1,+1],
+  ["GMV Content","—","Not started","—",["EDC"],1,+1],
+  ["Troy David Blackmon","Male","Not started","UGC",["EDC"],1,0],
+  ["Matthew Whiteman @binnsboys","Male","Not started","—",["Tech"],1,0],
+  ["Manuela Castro","Female","Not started","UGC",["Tech"],1,+1],
+  ["Samantha Stevenson @everyday.elsewhere","Female","Negotiating","Family Creator",["Jewelry"],1,+1],
+  ["Robert Bathe (PissMissile)","Male","Not started","Golf",["Travel"],1,0]
+];
+// [name, gender, dateLabel, endIso, urgency]  urgency: "soon"|"later"|"expired"
+const EXPIRING=[
+  ["Nick Castle","Male","Feb 7 (expired)","2026-02-07","expired"],
+  ["Zak Brahmbhatt","Male","Jun 15","2026-06-15","soon"],
+  ["Gabriel Saint Elien","Male","Jun 15","2026-06-15","soon"],
+  ["Keeley Mazurek","Female","Jun 16","2026-06-16","soon"],
+  ["Nikoline Krog","Female","Jun 29","2026-06-29","soon"],
+  ["Sierra Bowden","Female","Jul 11","2026-07-11","later"],
+  ["Sarah Franz","Female","Jul 15","2026-07-15","later"],
+  ["Mike Mazurek","Male","Aug 25","2026-08-25","later"]
+];
+const THROUGHPUT=[["Dec",24],["Jan",35],["Feb",64],["Mar",43],["Apr",59],["May",72]];
+const TOPCREATORS=[["Brandon Romanchuk",39],["Jon Lavallee",35],["Marques Brownlee",31],["AI Creator",19],["Keeley Mazurek",18],["Daniel Kane",15]];
+const CATS=[["EDC",155,"#5B7FA6"],["Tech",59,"#C18A48"],["Jewelry",57,"#8E73B5"],["Travel",15,"#6F9A77"],["Gut-Culture",10,"#B96B5A"]];
+// [title, repeats, format, scriptUrl]
+const CONCEPTS_REP=[
+  ["Unboxing",7,"VID","https://docs.google.com/document/d/1unboxing/edit"],
+  ["Everything You Need",6,"VID","https://docs.google.com/document/d/1G__tyYBpRC3SUIdufiFopn_76FH7zR1oDrW5STpWBOg/edit"],
+  ["MKBHD FDAY INSTREAM CALL OUTS",6,"TV","https://docs.google.com/document/d/1mkbhd/edit"],
+  ["Watch This Concept",6,"VID","https://docs.google.com/document/d/1watch/edit"],
+  ["Brand Video",4,"VID",null],
+  ["exposing my friends gift - fday",4,"VID","https://docs.google.com/document/d/1exposing/edit"],
+  ["most powerful wallet - fday",4,"VID","https://docs.google.com/document/d/1powerful/edit"],
+  ["Perfect wallet for husbands iphone - fday",4,"VID","https://docs.google.com/document/d/1perfect/edit"]
+];
+
+function showTab(id){
+  ["t1","t2","t3","t4","t5"].forEach(t=>document.getElementById(t).classList.toggle("hide",t!==id));
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));
+}
+
+const PROJ_CATS=[["EDC",24,"#5B7FA6"],["TECH",13,"#C18A48"],["TRAVEL",10,"#6F9A77"],["JEWELRY",8,"#8E73B5"]];
+// [creator, count, ptStatus or null]
+const PROJ_TOPCR=[["Jon Lavallee",7,"Active"],["Brandon Romanchuk",6,"Active"],["Ben Horne",5,"Active"],["Mackenzie Studios",4,"Active"],["Zak Brahmbhatt",3,"Expiring Jun 15"],["Niki Zamora",3,null],["Roby Brown",2,"Active"]];
+// [title, category, creator, rate, source, scriptUrl, taskUrl, ptStatus]
+const PROJ_CONCEPTS=[
+  ["Everything You Need","TECH","Charlotte van der Wee",150,"filled","https://docs.google.com/document/d/1Bh8efcl-pFJWCxIFrxB9OnNza8JfJe3nnG3SLSA3GBs/edit","https://www.notion.so/ridgewallet/ey-a",null],
+  ["Everything You Need","TECH","Manuela Castro",150,"filled","https://docs.google.com/document/d/1G__tyYBpRC3SUIdufiFopn_76FH7zR1oDrW5STpWBOg/edit","https://www.notion.so/ridgewallet/ey-b",null],
+  ["Everything You Need","TECH","Sierra Bowden",500,"filled","https://docs.google.com/document/d/1G__tyYBpRC3SUIdufiFopn_76FH7zR1oDrW5STpWBOg/edit","https://www.notion.so/ridgewallet/ey-c","Active"],
+  ["Concept: You haven't seen a chain like this","JEWELRY","Brandon Romanchuk",450,"retainer","https://docs.google.com/document/d/1abc/edit","https://www.notion.so/ridgewallet/chain","Active"],
+  ["CONCEPT: Haven't checked my luggage in 6 years","TRAVEL","Zak Brahmbhatt",500,"filled","https://docs.google.com/document/d/1def/edit","https://www.notion.so/ridgewallet/luggage","Expiring Jun 15"],
+  ["CONCEPT: They Actually Listened","TRAVEL","Brandon Romanchuk",450,"retainer","https://docs.google.com/document/d/1ghi/edit","https://www.notion.so/ridgewallet/listened","Active"],
+  ["CONCEPT: Overhead Bin. No Stress.","TRAVEL","Mackenzie Studios",450,"retainer","https://docs.google.com/document/d/1jkl/edit","https://www.notion.so/ridgewallet/overhead","Active"],
+  ["CONCEPT: She got me my wedding ring","JEWELRY","Zak Brahmbhatt",500,"filled","https://docs.google.com/document/d/1mno/edit","https://www.notion.so/ridgewallet/wedding","Expiring Jun 15"],
+  ["CONCEPT: I'm a Guy — Here's What We Actually Want","JEWELRY","Brandon Romanchuk",450,"retainer","https://docs.google.com/document/d/1pqr/edit","https://www.notion.so/ridgewallet/iam-guy","Active"],
+  ["CONCEPT: Overspending on his ring","JEWELRY","Mackenzie Studios",450,"retainer","https://docs.google.com/document/d/1stu/edit","https://www.notion.so/ridgewallet/overspending","Active"],
+  ["Unboxing","EDC","Jon Lavallee",150,"filled",null,"https://www.notion.so/ridgewallet/unboxing-jon","Active"],
+  ["Millennial Grey","EDC","Niki Zamora",230,"avg","https://docs.google.com/document/d/1vwx/edit","https://www.notion.so/ridgewallet/millennial",null],
+  ["fav iphone accessory","EDC","Jon Lavallee",150,"filled","https://docs.google.com/document/d/1yza/edit","https://www.notion.so/ridgewallet/iphone","Active"],
+  ["whiteboard callouts","EDC","Mackenzie Studios",450,"retainer",null,"https://www.notion.so/ridgewallet/whiteboard","Active"],
+  ["wallet addiction","EDC","Brandon Romanchuk",450,"retainer","https://docs.google.com/document/d/1bcd/edit","https://www.notion.so/ridgewallet/addiction","Active"],
+  ["Concept: The Bin Protector","TRAVEL","Roby Brown",230,"avg","https://docs.google.com/document/d/1efg/edit","https://www.notion.so/ridgewallet/bin","Active"],
+  ["Concept: The Aerospace Standard","TRAVEL","Ben Horne",230,"avg","https://docs.google.com/document/d/1hij/edit","https://www.notion.so/ridgewallet/aero","Active"],
+  ["Concept: The Two-Week Carry-On","TRAVEL","Ben Horne",230,"avg","https://docs.google.com/document/d/1klm/edit","https://www.notion.so/ridgewallet/twoweek","Active"]
+];
+const CATCOLOR2={EDC:"#5B7FA6",TECH:"#C18A48",TRAVEL:"#6F9A77",JEWELRY:"#8E73B5","Gut-Culture":"#B96B5A"};
+let projSortCol=null,projSortDir=1;
+
+// ============ CUSTOM TOOLTIP SYSTEM ============
+const tipbox=document.getElementById("tipbox");
+document.addEventListener("mouseover",e=>{
+  const el=e.target.closest("[data-tip]");
+  if(el){tipbox.textContent=el.dataset.tip;tipbox.style.opacity="1";positionTip(e);}
+});
+document.addEventListener("mousemove",e=>{
+  if(tipbox.style.opacity==="1")positionTip(e);
+});
+document.addEventListener("mouseout",e=>{
+  const goingTo=e.relatedTarget&&e.relatedTarget.closest&&e.relatedTarget.closest("[data-tip]");
+  const from=e.target.closest("[data-tip]");
+  if(from&&!goingTo)tipbox.style.opacity="0";
+});
+function positionTip(e){
+  let x=e.clientX+14,y=e.clientY+18;
+  const w=260;
+  if(x+w>window.innerWidth)x=e.clientX-w-14;
+  if(y+80>window.innerHeight)y=e.clientY-90;
+  tipbox.style.left=x+"px";tipbox.style.top=y+"px";
+}
+
+// ============ RENDERERS ============
+function renderOutreach(mode){
+  const data=OUTREACH[mode],keys=Object.keys(data),max=200,chart=document.getElementById("outreachChart");
+  chart.innerHTML='<span class="ytick" style="bottom:-2px;">0</span><span class="ytick" style="top:65px;">100</span><span class="ytick" style="top:0;">200</span>';
+  OUTREACH.months.forEach((m,i)=>{const col=document.createElement("div");col.className="colstack";
+    if(i===0){col.style.outline="2px solid var(--rust)";col.style.outlineOffset="2px";}
+    let segs="";if(i===0){keys.forEach(k=>{const v=data[k][i];if(v>0){const h=(v/max)*150;segs+=`<div style="flex:0 0 ${h}px;background:${OUTREACH.colors[k]};" data-tip="${k}: ${v} creators"></div>`;}});}
+    else{col.style.opacity=".25";segs='<div style="flex:0 0 3px;background:var(--border);"></div>';}
+    col.innerHTML=segs;chart.appendChild(col);});
+  document.getElementById("outreachX").innerHTML=OUTREACH.months.map((m,i)=>`<div style="${i===0?'color:var(--black);font-weight:700;':'opacity:.45;'}">${m}</div>`).join("");
+  document.getElementById("outreachLegend").innerHTML=keys.map(k=>`<div class="li"><span class="sw" style="background:${OUTREACH.colors[k]};"></span><span style="font-weight:600;">${k}</span></div>`).join("");
+}
+function setOutreachMode(mode,btn){document.querySelectorAll("#t1 .toggle button").forEach(b=>b.classList.remove("on"));btn.classList.add("on");renderOutreach(mode);}
+
+function renderFunnel(){
+  document.getElementById("funnel").innerHTML=FUNNEL.map(r=>{const color=r.win?"var(--pos)":"var(--rust)";const drop=r.drop?`<span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:var(--neg);">${r.drop}%</span>`:"";
+    return `<div style="display:grid;grid-template-columns:110px 44px 1fr 54px;gap:12px;align-items:center;margin-bottom:8px;font-size:12px;"><div style="font-weight:${r.win?700:600};color:${r.win?'var(--pos)':'var(--black)'};">${r.s}</div><div style="font-weight:700;font-size:16px;color:${r.win?'var(--pos)':'var(--black)'};text-align:right;">${r.n}</div><div style="height:14px;background:var(--bone);border-radius:3px;position:relative;overflow:hidden;"><div style="height:100%;width:${r.pct}%;background:${color};border-radius:3px;"></div>${drop}</div><div style="font-weight:700;color:${r.win?'var(--pos)':'var(--black)'};text-align:right;">${r.pct}%</div></div>`;}).join("");
+  document.getElementById("funnelLost").innerHTML=LOST.map(r=>`<div style="display:grid;grid-template-columns:110px 44px 1fr 54px;gap:12px;align-items:center;margin-bottom:6px;font-size:12px;"><div style="font-weight:600;color:var(--muted);">${r.s}</div><div style="font-weight:700;font-size:14px;color:var(--muted);text-align:right;">${r.n}</div><div style="height:8px;background:var(--bone);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${r.pct}%;background:${r.s==='Pass'?'var(--neg)':'var(--muted)'};border-radius:3px;opacity:.75;"></div></div><div style="font-weight:600;color:var(--muted);text-align:right;font-size:11px;">${r.pct}%</div></div>`).join("");
+}
+
+function renderTagPills(elementId, data, color){
+  if(!data || !data.length){
+    document.getElementById(elementId).innerHTML='<div style="padding:24px;text-align:center;color:var(--muted);font-style:italic;font-size:12px;">Pending — property still being populated in Notion.</div>';
+    return;
+  }
+  const max=data[0][1];
+  document.getElementById(elementId).innerHTML=data.map(([n,v])=>{
+    const intensity=v/max;
+    const padV=4+intensity*6;
+    const padH=10+intensity*8;
+    const fontSize=11+intensity*5;
+    const opacity=0.55+intensity*0.45;
+    return `<span data-tip="${n}: ${v} creators" style="display:inline-flex;align-items:center;gap:6px;padding:${padV}px ${padH}px;border-radius:999px;background:${color};color:#fff;font-size:${fontSize.toFixed(1)}px;font-weight:600;opacity:${opacity.toFixed(2)};line-height:1;cursor:default;"><span>${n}</span><span style="background:rgba(255,255,255,.25);padding:1px 7px;border-radius:999px;font-size:${(fontSize*0.8).toFixed(1)}px;font-weight:700;">${v}</span></span>`;
+  }).join("");
+}
+function renderNicheCloud(){renderTagPills("nicheTags", NICHES, "#5B7FA6");}
+function renderFormatTags(){renderTagPills("formatTags", FORMAT_STYLES, "#8E73B5");}
+
+function renderTierBars(){
+  const max=177;document.getElementById("tierBars").innerHTML=TIERSORT.map(([n,v,p])=>`<div class="bar-row" style="margin-bottom:10px;"><div class="top"><span style="font-weight:600;">${n}</span><span style="font-weight:700;">${v} <span class="muted" style="font-weight:400;">${p}</span></span></div><div class="bar-track" style="height:14px;"><div class="bar-fill" style="width:${(v/max)*100}%;background:#8E73B5;"></div></div></div>`).join("");
+}
+
+function renderAges(){document.getElementById("ageBars").innerHTML=AGES.map(([n,v,p])=>`<div class="bar-row" style="margin-bottom:10px;"><div class="top"><span style="font-weight:600;${n==='(not set)'?'color:var(--muted);':''}">${n}</span><span style="font-weight:700;">${v}</span></div><div class="bar-track" style="height:14px;"><div class="bar-fill" style="width:${p};background:${n==='(not set)'?'var(--c6)':'#6F9A77'};"></div></div></div>`).join("");}
+
+function renderPersonaBars(){
+  const max=PERSONAS[0][1];
+  document.getElementById("personaBars").innerHTML=PERSONAS.map(([n,v,p])=>`<div class="bar-row" style="margin-bottom:10px;"><div class="top"><span style="font-weight:600;${n==='(Unassigned)'?'color:var(--muted);':''}">${n}</span><span style="font-weight:700;">${v}</span></div><div class="bar-track" style="height:14px;"><div class="bar-fill" style="width:${p};background:${n==='(Unassigned)'?'var(--c6)':'#B96B5A'};"></div></div></div>`).join("");
+}
+
+function renderGenderDonut(){
+  const cx=70,cy=70,ro=56,ri=34;const segs=[["Male",229,"#5B7FA6"],["Female",115,"#B96B5A"],["Not set",10,"#C8C8C0"]];const total=354;let cum=-Math.PI/2,paths="";
+  segs.forEach(([n,v,c])=>{const ang=(v/total)*2*Math.PI,a0=cum,a1=cum+ang;cum=a1;const x1=cx+ro*Math.cos(a0),y1=cy+ro*Math.sin(a0),x2=cx+ro*Math.cos(a1),y2=cy+ro*Math.sin(a1),x3=cx+ri*Math.cos(a1),y3=cy+ri*Math.sin(a1),x4=cx+ri*Math.cos(a0),y4=cy+ri*Math.sin(a0),la=ang>Math.PI?1:0;paths+=`<path d="M ${x1} ${y1} A ${ro} ${ro} 0 ${la} 1 ${x2} ${y2} L ${x3} ${y3} A ${ri} ${ri} 0 ${la} 0 ${x4} ${y4} Z" fill="${c}" stroke="#fff" stroke-width="1" data-tip="${n}: ${v} (${Math.round(v/total*100)}%)"></path>`;});
+  document.getElementById("genderDonut").innerHTML=`<svg viewBox="0 0 140 140" style="width:120px;">${paths}</svg><div class="legend" style="justify-content:center;">`+segs.map(([n,v,c])=>`<div class="li"><span class="sw" style="background:${c};"></span><span style="font-weight:600;">${n} ${Math.round(v/total*100)}%</span></div>`).join("")+`</div>`;
+}
+
+let partnerSortCol=null,partnerSortDir=1;
+function sortPartners(col){
+  if(partnerSortCol===col)partnerSortDir*=-1;else{partnerSortCol=col;partnerSortDir=1;}
+  renderPartners();
+  ["psa0","psa2","psa3","psa4","psa5"].forEach(id=>{const el=document.getElementById(id);if(!el)return;const i=parseInt(id.slice(3),10);el.textContent=partnerSortCol===i?(partnerSortDir===1?"▲":"▼"):"⇅";el.style.opacity=partnerSortCol===i?"1":".4";});
+}
+function setPartnerGender(g,btn){
+  partnerGenderFilter=g;
+  btn.parentElement.querySelectorAll(".fbtn").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+  renderPtKpis();
+  renderPartners();
+  renderIdle();
+  renderTopProducers();
+  renderExpiring();
+  renderNoPt();
+}
+function renderTopProducers(){
+  const el=document.getElementById("topProducers");
+  if(!el)return;
+  const all=TOPPROD.filter(p=>partnerGenderFilter==="all"||p[2]===partnerGenderFilter);
+  if(!all.length){el.innerHTML='<div class="muted" style="font-size:11px;font-style:italic;">No producers match this filter.</div>';return;}
+  const top=all.slice(0,5);
+  const rest=all.slice(5);
+  const restCount=rest.reduce((s,p)=>s+p[1],0);
+  const restNames=rest.length;
+  const topHtml=top.map((p,i)=>`<div style="display:flex;align-items:center;gap:8px;font-size:11px;margin-bottom:9px;"><span style="font-size:12px;font-weight:700;color:${i<3?'var(--rust)':'var(--muted)'};min-width:14px;">${i+1}</span><span style="flex:1;font-weight:600;">${p[0]}</span><span style="font-weight:700;">${p[1]}</span></div>`).join("");
+  const footer=restNames>0 ? `<div style="margin-top:4px;padding-top:8px;border-top:.5px solid var(--border);font-size:10px;color:var(--muted);font-style:italic;">+ ${restNames} more producer${restNames===1?'':'s'} (${restCount} concept${restCount===1?'':'s'})</div>` : '';
+  el.innerHTML=topHtml+footer;
+}
+function renderNoPt(){
+  const tbody=document.getElementById("noPtRows");
+  if(!tbody)return;
+  const filtered=NO_PT_ACCESS.filter(p=>partnerGenderFilter==="all"||p[1]===partnerGenderFilter);
+  const cnt=document.getElementById("noPtCount");
+  if(cnt)cnt.textContent=`${filtered.length} creator${filtered.length===1?'':'s'}`;
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="6" class="muted" style="padding:14px;text-align:center;font-style:italic;font-size:11px;">No creators match this filter.</td></tr>';return;}
+  tbody.innerHTML=filtered.map(([n,g,pt,niche,cats,c,mom])=>{
+    const ptColor = pt==="Negotiating"?"#8A5A1F" : pt==="Per Video or Month"?"#2C5A8A" : pt==="No Access"?"var(--neg)" : pt==="Paused"?"#8A5A1F" : "var(--muted)";
+    const ptBg = pt==="Negotiating"?"#FBE9D8" : pt==="Per Video or Month"?"#E6EEF7" : pt==="No Access"?"#FCE8E6" : pt==="Paused"?"#FBE9D8" : "var(--bone)";
+    const catsHtml = (cats||[]).map(ct=>`<span class="catpill" style="background:${CATCOLOR[ct]||'var(--muted)'};">${ct}</span>`).join("") || '<span class="muted">—</span>';
+    let momHtml;
+    if(mom===0) momHtml='<span class="muted" style="font-size:10px;">=</span>';
+    else if(mom>0) momHtml=`<span style="color:var(--pos);font-weight:700;">▲ ${mom}</span>`;
+    else momHtml=`<span style="color:var(--neg);font-weight:700;">▼ ${Math.abs(mom)}</span>`;
+    return `<tr>
+      <td style="font-weight:600;">${n}</td>
+      <td>${niche||'—'}</td>
+      <td>${catsHtml}</td>
+      <td><span style="display:inline-block;padding:2px 7px;border-radius:999px;background:${ptBg};color:${ptColor};font-size:9px;font-weight:700;">${pt}</span></td>
+      <td class="r">${c}</td>
+      <td class="r" style="font-weight:400;">${momHtml}</td>
+    </tr>`;
+  }).join("");
+}
+function renderExpiring(){
+  const el=document.getElementById("expiringList");
+  if(!el)return;
+  const filtered=EXPIRING.filter(p=>partnerGenderFilter==="all"||p[1]===partnerGenderFilter).slice(0,6);
+  if(!filtered.length){el.innerHTML='<div class="muted" style="font-size:11px;font-style:italic;">No upcoming expirations match this filter.</div>';return;}
+  el.innerHTML=filtered.map(([name,g,label,iso,urg])=>{
+    const color=urg==="expired"||urg==="soon"?"var(--neg)":"var(--c3)";
+    return `<div style="display:flex;justify-content:space-between;"><span style="font-weight:600;">${name}</span><span style="color:${color};font-weight:700;">${label}</span></div>`;
+  }).join("");
+}
+function renderPtKpis(){
+  const el=document.getElementById("ptKpis");
+  if(!el)return;
+  const s=PT_STATS[partnerGenderFilter];
+  const donePct = s.total>0 ? Math.round(s.done/s.total*100) : 0;
+  el.innerHTML=`
+    <div class="kpi"><div class="lbl" data-tip="Pulled from Notion · PT Access Status = Active. Filter: ${partnerGenderFilter==='all'?'all genders':partnerGenderFilter}.">Active Access</div><div><div class="row"><span class="num">${s.active}</span><span class="pill flat">–</span></div><div class="sub">accounts with active access</div></div></div>
+    <div class="kpi"><div class="lbl" data-tip="Of partners with active access, how many produced ≥1 concept this month.">Partners In Use</div><div><div class="row"><span class="num">${s.utilPct}%</span><span class="pill flat">–</span></div><div class="sub">${s.producing} producing · ${s.idle} idle</div></div></div>
+    <div class="kpi"><div class="lbl" data-tip="AD-CREATIVE concepts (Due Date this month) by active partners. Split into Done (finished, handed to media buyers) and In Progress (still being produced).">Partner Concepts</div><div><div class="row"><span class="num">${s.total}</span><span class="pill flat">–</span></div><div class="sub"><b style="color:var(--pos);">${s.done}</b> done · <b style="color:#8A5A1F;">${s.progress}</b> in progress</div></div></div>
+    <div class="kpi"><div class="lbl">Avg per Producing Partner</div><div><div class="row"><span class="num">${s.avg}</span><span class="pill flat">–</span></div><div class="sub">concepts ÷ producing partners</div></div></div>
+  `;
+}
+function renderIdle(){
+  const list=document.getElementById("idleList");
+  if(!list)return;
+  const filtered=IDLE_PARTNERS.filter(p=>partnerGenderFilter==="all" || p[1]===partnerGenderFilter);
+  const badge=document.getElementById("idleCount");
+  if(badge) badge.textContent=filtered.length;
+  if(filtered.length===0){
+    list.innerHTML='<div style="padding:14px 4px;text-align:center;color:var(--muted);font-style:italic;font-size:11px;">No idle partners match this filter.</div>';
+    return;
+  }
+  list.innerHTML=filtered.map(([n,g,niche,access,flag])=>{
+    const flagHtml = flag ? `<span style="display:inline-block;padding:1px 5px;border-radius:3px;background:var(--neg);color:#fff;font-size:9px;font-weight:700;margin-left:6px;">${flag}</span>` : '';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:10.5px;border-bottom:.5px solid #F4D5CC;gap:8px;">
+      <span style="flex:1;min-width:0;font-weight:600;color:#1A1A18;overflow:hidden;text-overflow:ellipsis;">${n}${flagHtml}</span>
+      <span style="color:var(--muted);font-size:9.5px;white-space:nowrap;">${access}</span>
+    </div>`;
+  }).join("");
+}
+function renderPartners(){
+  let rows=[...PARTNERS].filter(p=>partnerGenderFilter==="all" || p[6]===partnerGenderFilter);
+  if(partnerSortCol!==null){
+    rows.sort((a,b)=>{
+      let av=a[partnerSortCol],bv=b[partnerSortCol];
+      if(partnerSortCol===3){av=(av||[]).join(",");bv=(bv||[]).join(",");}
+      if(partnerSortCol===5){const conv=v=>v==="new"?0:(typeof v==="string"&&v.startsWith("+"))?parseInt(v.slice(1),10):(typeof v==="string"&&v.startsWith("-"))?-parseInt(v.slice(1),10):0;av=conv(av);bv=conv(bv);}
+      const an=typeof av==="number",bn=typeof bv==="number";
+      if(an&&bn)return (av-bv)*partnerSortDir;
+      return String(av).localeCompare(String(bv))*partnerSortDir;
+    });
+  }
+  document.getElementById("partnerRows").innerHTML=rows.map(p=>{const idle=p[4]===0;
+    const cats=p[3].map(c=>`<span class="catpill" style="background:${CATCOLOR[c]};">${c}</span>`).join("")||'<span class="muted">—</span>';
+    let mom=p[5];let momHtml;
+    if(mom==='new')momHtml='<span class="muted" style="font-size:10px;">new</span>';
+    else if(mom==='=' || mom==='0')momHtml='<span class="muted" style="font-size:10px;">=</span>';
+    else if(mom.startsWith('+'))momHtml=`<span style="color:var(--pos);font-weight:700;">▲ ${mom.slice(1)}</span>`;
+    else momHtml=`<span style="color:var(--neg);font-weight:700;">▼ ${mom.slice(1)}</span>`;
+    return `<tr style="${idle?'opacity:.5;':''}"><td style="font-weight:600;">${p[0]} <span class="muted">${p[1]}</span></td><td>${p[2]}</td><td>${cats}</td><td class="r" style="${idle?'color:var(--neg);':''}">${p[4]}</td><td class="r" style="font-weight:400;">${idle?'':momHtml}</td></tr>`;}).join("");
+}
+
+function renderThroughput(){const max=80,chart=document.getElementById("throughputChart");chart.innerHTML='<span class="ytick" style="bottom:-2px;">0</span><span class="ytick" style="top:65px;">40</span><span class="ytick" style="top:0;">80</span>';
+  THROUGHPUT.forEach((m,i)=>{const h=(m[1]/max)*150,col=document.createElement("div");col.className="colstack";if(i===THROUGHPUT.length-1){col.style.outline="2px solid var(--rust)";col.style.outlineOffset="2px";}col.innerHTML=`<div style="flex:0 0 ${h}px;background:#5B7FA6;border-radius:2px 2px 0 0;" data-tip="${m[0]}: ${m[1]} concepts"></div>`;chart.appendChild(col);});
+  document.getElementById("throughputX").innerHTML=THROUGHPUT.map((m,i)=>`<div style="${i===THROUGHPUT.length-1?'color:var(--black);font-weight:700;':''}">${m[0]}</div>`).join("");}
+
+function renderTopCreators(){const max=TOPCREATORS[0][1];document.getElementById("topCreators").innerHTML=TOPCREATORS.map((c,i)=>`<div class="bar-row" style="margin-bottom:9px;"><div class="top"><span style="font-weight:600;"><span style="color:var(--rust);font-weight:700;margin-right:6px;">${i+1}</span>${c[0]}</span><span style="font-weight:700;">${c[1]}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(c[1]/max)*100}%;background:var(--rust);"></div></div></div>`).join("");}
+
+function renderCats(){const max=CATS[0][1];document.getElementById("catBars").innerHTML=CATS.map(([n,v,c],i)=>`<div class="bar-row" style="margin-bottom:9px;"><div class="top"><span style="font-weight:600;"><span style="color:var(--rust);font-weight:700;margin-right:6px;">${i+1}</span>${n}</span><span style="font-weight:700;">${v}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(v/max)*100}%;background:${c};"></div></div></div>`).join("");}
+
+function renderConcepts(){
+  document.getElementById("conceptList").innerHTML=CONCEPTS_REP.map(([t,c,fmt,url])=>{
+    const fmtBadge = fmt==="VID" ? '<span style="display:inline-block;padding:2px 7px;border-radius:999px;font-size:9px;font-weight:700;background:#E6EEF7;color:#2C5A8A;" data-tip="Vertical format (Meta)">VID</span>' : '<span style="display:inline-block;padding:2px 7px;border-radius:999px;font-size:9px;font-weight:700;background:#FBE9D8;color:#8A5A1F;" data-tip="Horizontal format (YouTube / stream)">TV</span>';
+    const titleHtml = url ? `<a href="${url}" target="_blank" style="flex:1;font-weight:600;color:var(--black);border-bottom:1px dotted var(--rust);text-decoration:none;" data-tip="Open script (Google Docs)">${t}</a>` : `<span style="flex:1;font-weight:600;">${t}</span>`;
+    return `<div class="concept-row"><span class="rep-badge">${c}×</span>${titleHtml}${fmtBadge}</div>`;
+  }).join("");
+}
+
+function rateCell(r,src){
+  const tip = src==="retainer"?"Retainer creator (Brandon Romanchuk / Ben McKenzie) — paid monthly, ~$450/concept"
+           : src==="avg"?"Rate not filled in Notion · estimated using avg of $230"
+           : r===0 ? "Rate set to $0 in Notion — typically Not UGC tag (founder/internal content)"
+           : "Rate filled in Notion";
+  const label = src==="retainer"?'<span style="font-size:9px;color:var(--rust);text-transform:uppercase;letter-spacing:.05em;margin-right:4px;font-weight:700;">RTR</span>'
+              : src==="avg"?'<span style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:4px;font-weight:700;font-style:italic;">EST</span>':'';
+  const color = (r===0 || src==="avg")?"color:var(--muted);":"";
+  return `<span data-tip="${tip}" style="${color}">${label}$${r}</span>`;
+}
+function ptBadge(s){
+  if(!s) return '<span class="muted" style="font-size:10px;">—</span>';
+  if(s==="Active") return '<span style="display:inline-block;padding:2px 6px;border-radius:999px;font-size:9px;font-weight:700;background:#E6F4EA;color:var(--pos);">PT Active</span>';
+  if(s.startsWith("Expiring")) return `<span style="display:inline-block;padding:2px 6px;border-radius:999px;font-size:9px;font-weight:700;background:#FFE8D8;color:var(--rust);" data-tip="Partnership access expires soon — ${s.replace('Expiring ','')}">⚠ ${s.replace('Expiring ','')}</span>`;
+  return `<span class="muted" style="font-size:10px;">${s}</span>`;
+}
+function renderProjConceptRows(){
+  let rows=[...PROJ_CONCEPTS];
+  if(projSortCol!==null){
+    rows.sort((a,b)=>{
+      const av=a[projSortCol]==null?"":a[projSortCol],bv=b[projSortCol]==null?"":b[projSortCol];
+      const an=typeof av==="number",bn=typeof bv==="number";
+      if(an&&bn) return (av-bv)*projSortDir;
+      return String(av).localeCompare(String(bv))*projSortDir;
+    });
+  }
+  document.getElementById("projConceptRows").innerHTML=rows.map(c=>{
+    const titleHtml = c[5] ? `<a href="${c[5]}" target="_blank" style="font-weight:600;color:var(--black);border-bottom:1px dotted var(--rust);" data-tip="Open script (Google Docs)">${c[0]}</a>` : `<span style="font-weight:600;">${c[0]}</span>`;
+    const taskBtn = c[6] ? `<a href="${c[6]}" target="_blank" data-tip="Open task in Notion" style="display:inline-block;padding:3px 8px;border:1px solid var(--border);border-radius:4px;font-size:10px;color:var(--black);font-weight:600;text-decoration:none;background:#FAFAF7;">Go to task ↗</a>` : '<span class="muted" style="font-size:10px;">—</span>';
+    return `<tr><td>${titleHtml}</td><td><span class="catpill" style="background:${CATCOLOR2[c[1]]||'var(--muted)'};">${c[1]}</span></td><td>${c[2]}</td><td>${ptBadge(c[7])}</td><td class="r">${rateCell(c[3],c[4])}</td><td class="r">${taskBtn}</td></tr>`;
+  }).join("");
+  ["sa0","sa1","sa2","sa3","sa7"].forEach(id=>{const el=document.getElementById(id);if(!el)return;const i=parseInt(id.slice(2),10);el.textContent=projSortCol===i?(projSortDir===1?"▲":"▼"):"⇅";el.style.opacity=projSortCol===i?"1":".4";});
+}
+function sortProj(col){
+  if(projSortCol===col)projSortDir*=-1; else {projSortCol=col;projSortDir=1;}
+  renderProjConceptRows();
+}
+function renderProjections(){
+  const maxC=PROJ_CATS[0][1];
+  document.getElementById("projCatBars").innerHTML=PROJ_CATS.map(([n,v,c],i)=>`<div class="bar-row" style="margin-bottom:9px;"><div class="top"><span style="font-weight:600;"><span style="color:var(--rust);font-weight:700;margin-right:6px;">${i+1}</span>${n}</span><span style="font-weight:700;">${v}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(v/maxC)*100}%;background:${c};"></div></div></div>`).join("");
+  const maxT=PROJ_TOPCR[0][1];
+  document.getElementById("projTopCreators").innerHTML=PROJ_TOPCR.map((c,i)=>{
+    const badge = c[2] ? (c[2]==="Active" ? ' <span style="display:inline-block;padding:1px 6px;border-radius:999px;font-size:9px;font-weight:700;background:#E6F4EA;color:var(--pos);margin-left:4px;">PT Active</span>' : ` <span style="display:inline-block;padding:1px 6px;border-radius:999px;font-size:9px;font-weight:700;background:#FFE8D8;color:var(--rust);margin-left:4px;" data-tip="Partnership access ${c[2]}">⚠ ${c[2].replace('Expiring ','exp ')}</span>`) : '';
+    return `<div class="bar-row" style="margin-bottom:9px;"><div class="top"><span style="font-weight:600;"><span style="color:${i<3?'var(--rust)':'var(--muted)'};font-weight:700;margin-right:6px;">${i+1}</span>${c[0]}${badge}</span><span style="font-weight:700;">${c[1]}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(c[1]/maxT)*100}%;background:var(--rust);"></div></div></div>`;
+  }).join("");
+  renderProjConceptRows();
+}
+
+renderOutreach("gender");renderFunnel();renderNicheCloud();renderFormatTags();renderTierBars();renderAges();renderPersonaBars();renderGenderDonut();renderPtKpis();renderPartners();renderIdle();renderTopProducers();renderExpiring();renderNoPt();renderThroughput();renderTopCreators();renderCats();renderConcepts();renderProjections();
+</script>
+</body>
+</html>
