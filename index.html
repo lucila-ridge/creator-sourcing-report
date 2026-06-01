@@ -26,7 +26,10 @@
   .logo span{font-size:16px;color:#fff;font-weight:800;letter-spacing:.12em;font-family:'Barlow Condensed',sans-serif;}
   .hdr .sep{width:1px;height:20px;background:#3A3D42;}
   .hdr .rt{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'Barlow Condensed',sans-serif;font-weight:500;}
-  .monthsel{background:var(--rust);color:#fff;padding:4px 12px;border-radius:2px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-family:'Barlow Condensed',sans-serif;font-weight:500;display:flex;align-items:center;gap:8px;border:none;cursor:pointer;}
+  .monthsel{background:var(--rust);color:#fff;padding:4px 26px 4px 12px;border-radius:2px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-family:'Barlow Condensed',sans-serif;font-weight:500;border:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6' viewBox='0 0 8 6'%3E%3Cpath fill='%23fff' d='M4 6L0 0h8z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;outline:none;}
+  .monthsel option{background:#1A1A18;color:#fff;}
+  .monthbanner{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#1A1A18;color:#fff;padding:8px 16px;border-radius:4px;font-size:11px;letter-spacing:.04em;z-index:200;opacity:0;transition:opacity .2s;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.3);}
+  .monthbanner.show{opacity:1;}
   .fbar{background:var(--surface);border-bottom:1px solid var(--border);padding:9px 24px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;position:sticky;top:50px;z-index:101;}
   .fgrp{display:flex;align-items:center;gap:8px;}
   .flabel{font-size:10px;color:var(--black);font-family:'Barlow Condensed',sans-serif;font-weight:800;text-transform:uppercase;letter-spacing:.08em;}
@@ -38,7 +41,7 @@
   .nav button.active{border-bottom-color:var(--rust);color:var(--black);}
   .wrap{padding:22px 24px;max-width:1180px;margin:0 auto;}
   .sechdr{border-bottom:2px solid var(--black);padding-bottom:12px;margin-bottom:18px;}
-  .sechdr h2{margin:0;font-size:22px;font-family:'Barlow Condensed',sans-serif;font-weight:800;letter-spacing:.02em;}
+  .sechdr h2{margin:0;font-size:22px;font-family:'Barlow Condensed',sans-serif;font-weight:800;letter-spacing:.05em;text-transform:uppercase;}
   .sechdr p{margin:4px 0 0;color:var(--muted);font-size:12px;}
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
   .kpi{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between;min-height:108px;}
@@ -106,7 +109,10 @@
     <div class="logo"><i></i><span>RIDGE</span></div>
     <div class="sep"></div>
     <span class="rt">Creator Sourcing Report</span>
-    <button class="monthsel">May '26 ▼</button>
+    <select class="monthsel" onchange="handleMonthChange(this.value, this.options[this.selectedIndex].text)">
+      <option value="2026-05" selected>May '26</option>
+      <option value="2026-06">Jun '26</option>
+    </select>
   </div>
   <span class="rt">Paid Social Team</span>
 </div>
@@ -369,6 +375,7 @@
 </div>
 
 <div class="tipbox" id="tipbox"></div>
+<div class="monthbanner" id="monthbanner"></div>
 
 <script>
 const OUTREACH = {
@@ -379,7 +386,7 @@ const OUTREACH = {
 };
 const FUNNEL=[{s:"Prospect",n:168,pct:100,drop:null},{s:"Approved Int.",n:137,pct:82,drop:-18},{s:"Outreached",n:104,pct:62,drop:-24},{s:"Replied",n:46,pct:27,drop:-56},{s:"Negotiating",n:36,pct:21,drop:-22},{s:"Deal Closed",n:31,pct:18,drop:null,win:true}];
 const LOST=[{s:"Pass",n:11,pct:7},{s:"Ghosted",n:0,pct:0}];
-const NICHES=[["UGC",109],["Lifestyle",85],["Content Creator",43],["Wives/Moms",39],["Surf",36],["Tech",30],["Fitness",19],["Not UGC",17],["Family Creators",14],["Outdoorsy",11]];
+const NICHES=[["UGC",109],["Lifestyle",85],["Wives/Moms",39],["Surf",36],["Tech",30],["Fitness",19],["Not UGC",17],["Outdoorsy",16],["Family Creators",16],["Older Guys",14],["Premium EDC",11],["Dad",11]];
 const FORMAT_STYLES=[["Unboxing",24],["Yapping",18],["Street Interview",12],["Tutorial",9],["Lifestyle Skit",7],["Voiceover",4]];
 const TIERSORT=[["Nano (<10k)",81,"46%"],["Micro (10–100k)",79,"45%"],["Mid (100–500k)",13,"7%"],["Macro (500k–1M)",0,"0%"],["Mega (1M+)",0,"0%"]];
 const AGES=[["25 – 35",197,"100%"],["35 – 45",59,"30%"],["45 – 60",15,"8%"],["(not set)",83,"42%"]];
@@ -403,7 +410,7 @@ const PARTNERS=[
   ["Sierra Bowden","@realSierraJohnson","Young Mom",["EDC","Tech"],2,"=","Female"],
   ["Zak Brahmbhatt","@zakbcreates","UGC",["EDC","Jewelry","Tech","Travel"],2,"-1","Male"],
   ["Brittany Daniels","@brittanymdaniels","UGC",["EDC"],1,"new","Female"],
-  ["Connor Rodriguez","","Content Creator",["EDC","Jewelry"],1,"-1","Male"],
+  ["Connor Rodriguez","","—",["EDC","Jewelry"],1,"-1","Male"],
   ["Jacob Hatch","@jacobtylerhatch","UGC",["EDC"],1,"new","—"],
   ["Lauren Granara","@laugranara","Wives/Moms",["Jewelry"],1,"new","Female"],
   ["Mike Mazurek","@coachmikemazurek","Fitness",["EDC","Gut-Culture","Jewelry"],1,"new","Male"],
@@ -412,7 +419,7 @@ const PARTNERS=[
   ["Yari R","@yacaro","—",["Jewelry"],1,"new","Female"],
   ["Angela Zhou","@barsoapang","Tech",[],0,"=","Female"],
   ["Benjamin - Mackenzie Studio Works","","—",["EDC","Jewelry","Tech","Travel"],0,"-3","Male"],
-  ["Carly Shasho","@carlyshasho","Content Creator",["EDC","Jewelry"],0,"-1","Female"],
+  ["Carly Shasho","@carlyshasho","—",["EDC","Jewelry"],0,"-1","Female"],
   ["Cole Pulsipher","@colsipher","—",[],0,"=","Male"],
   ["Edwin Sarkissian","@edwinsarkissian","—",["Tech"],0,"=","Male"],
   ["Jade Riles","@visualperfectionllc","Car Mechanic",["EDC","Tech"],0,"=","Male"],
@@ -436,7 +443,7 @@ const PT_STATS={
 const IDLE_PARTNERS=[
   ["Angela Zhou @barsoapang","Female","Tech","no dates set",null],
   ["Benjamin - Mackenzie Studio Works","Male","—","no dates set",null],
-  ["Carly Shasho @carlyshasho","Female","Content Creator","no dates set",null],
+  ["Carly Shasho @carlyshasho","Female","—","no dates set",null],
   ["Cole Pulsipher @colsipher","Male","—","no dates set",null],
   ["Edwin Sarkissian @edwinsarkissian","Male","—","no dates set",null],
   ["Jade Riles @visualperfectionllc","Male","Car Mechanic","no dates set",null],
@@ -486,9 +493,9 @@ const NO_PT_ACCESS=[
   ["BRAND CONTENT","—","Not started","—",["EDC"],2,-2],
   ["Charlotte van der Wee","Female","Not started","UGC",["Tech"],2,+2],
   ["Justin Davis @ugcwithjustin","Male","Not started","—",["EDC"],2,+2],
-  ["Elizabeth Cutler @elizabethxcutler","Female","Per Video or Month","Content Creator",["EDC","Tech"],2,+2],
+  ["Elizabeth Cutler @elizabethxcutler","Female","Per Video or Month","—",["EDC","Tech"],2,+2],
   ["ICON","—","Not started","—",["EDC"],2,+2],
-  ["Olivia Mayo @itsoliviamayo","Female","No Access","Content Creator",["Jewelry","Tech"],2,+1],
+  ["Olivia Mayo @itsoliviamayo","Female","No Access","—",["Jewelry","Tech"],2,+1],
   ["Lauren Mueller @its.lauren.hunt","Female","Paused","Wife",["EDC","Jewelry"],2,-3],
   ["Brennan Mueller","Male","Not started","UGC",["Tech","Travel"],2,+2],
   ["Erica Giambrone @erica.creates.ugc","Female","Not started","UGC",["EDC"],1,+1],
@@ -529,6 +536,20 @@ const CONCEPTS_REP=[
 function showTab(id){
   ["t1","t2","t3","t4","t5"].forEach(t=>document.getElementById(t).classList.toggle("hide",t!==id));
   document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));
+}
+
+let monthBannerTimeout;
+function handleMonthChange(value, label){
+  const banner=document.getElementById("monthbanner");
+  if(!banner)return;
+  if(value==="2026-05"){
+    banner.textContent=`Showing ${label} data`;
+  } else {
+    banner.textContent=`${label} not yet populated — will fill in as concepts ship. Showing May '26 snapshot for now.`;
+  }
+  banner.classList.add("show");
+  clearTimeout(monthBannerTimeout);
+  monthBannerTimeout=setTimeout(()=>banner.classList.remove("show"),3500);
 }
 
 const PROJ_CATS=[["EDC",24,"#5B7FA6"],["TECH",13,"#C18A48"],["TRAVEL",10,"#6F9A77"],["JEWELRY",8,"#8E73B5"]];
