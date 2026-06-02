@@ -102,6 +102,7 @@
   .wordcloud span{font-weight:700;cursor:default;}
   .concept-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:.5px solid #E8E8E4;font-size:12px;}
   .rep-badge{background:var(--rust);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;min-width:28px;text-align:center;}
+  .cn-bdg{display:inline-block;padding:2px 7px;border-radius:999px;font-size:9px;font-weight:700;letter-spacing:.02em;}
   .vidcard{flex:0 0 150px;background:var(--bone);border-radius:6px;overflow:hidden;border:1px solid var(--border);}
   .vidthumb{height:84px;background:linear-gradient(135deg,#2C3E50,#3D5166);display:flex;align-items:center;justify-content:center;color:#fff;}
   .vidcard .vt{padding:7px 9px;font-size:10px;font-weight:600;line-height:1.3;}
@@ -174,13 +175,7 @@
 
     <div class="card rust" style="border-left:3px solid var(--rust);">
       <div style="font-size:10px;color:var(--rust);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:8px;">Monthly Insight · Sourcing-focused</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;font-size:12px;line-height:1.55;">
-        <div>• <b>168 creators</b> added this month — first month with rich tracking, base of the cohort.</div>
-        <div>• Reply rate <b>44%</b> (46 / 104 emailed) — solid first-month signal, watch trend in June.</div>
-        <div>• Funnel bottleneck at <b>Outreached → Replied</b> (-56%): biggest drop, many silent after first email.</div>
-        <div>• Active Creators up <b style="color:var(--pos);">+19% MoM</b> (43 vs 36 in April) — TTB throughput growing.</div>
-        <div>• Projection: <b style="color:var(--rust);">33 concepts</b> coming next month, ~<b>$8.0k</b> projected payout (Working On It in TTB).</div>
-      </div>
+      <div id="srcInsights" style="display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;font-size:12px;line-height:1.55;"></div>
     </div>
 
     <div class="card">
@@ -794,10 +789,13 @@ function renderTopCreators(){const max=TOPCREATORS[0][1];document.getElementById
 function renderCats(){const max=CATS[0][1];document.getElementById("catBars").innerHTML=CATS.map(([n,v,c],i)=>`<div class="bar-row" style="margin-bottom:9px;"><div class="top"><span style="font-weight:600;"><span style="color:var(--rust);font-weight:700;margin-right:6px;">${i+1}</span>${n}</span><span style="font-weight:700;">${v}</span></div><div class="bar-track"><div class="bar-fill" style="width:${(v/max)*100}%;background:${catColor(n)};"></div></div></div>`).join("");}
 
 function renderConcepts(){
-  document.getElementById("conceptList").innerHTML=CONCEPTS_REP.filter(([t,c,fmt,url])=>!!url).map(([t,c,fmt,url])=>{
-    const fmtBadge = fmt==="VID" ? '<span style="display:inline-block;padding:2px 7px;border-radius:999px;font-size:9px;font-weight:700;background:#E6EEF7;color:#2C5A8A;" data-tip="Vertical format (Meta)">VID</span>' : '<span style="display:inline-block;padding:2px 7px;border-radius:999px;font-size:9px;font-weight:700;background:#FBE9D8;color:#8A5A1F;" data-tip="Horizontal format (YouTube / stream)">TV</span>';
+  document.getElementById("conceptList").innerHTML=CONCEPTS_REP.filter(([t,c,fmt,url])=>!!url).map(row=>{
+    const [t,c,fmt,url,cats,products]=row;
+    const fmtBadge = fmt==="VID" ? '<span class="cn-bdg" style="background:#E6EEF7;color:#2C5A8A;" data-tip="Vertical format (Meta)">VID</span>' : '<span class="cn-bdg" style="background:#FBE9D8;color:#8A5A1F;" data-tip="Horizontal format (YouTube / stream)">TV</span>';
+    const catBadges = (cats||[]).map(ct=>`<span class="cn-bdg" style="background:${catColor(ct)};color:#fff;" data-tip="Category">${ct}</span>`).join("");
+    const ptBadges = (products||[]).map(pt=>`<span class="cn-bdg" style="background:#EFEAE0;color:#4A4030;border:.5px solid #D4C9B0;" data-tip="Product type">${pt}</span>`).join("");
     const titleHtml = url ? `<a href="${url}" target="_blank" style="flex:1;font-weight:600;color:var(--black);border-bottom:1px dotted var(--rust);text-decoration:none;" data-tip="Open script (Google Docs)">${t}</a>` : `<span style="flex:1;font-weight:600;">${t}</span>`;
-    return `<div class="concept-row"><span class="rep-badge">${c}×</span>${titleHtml}${fmtBadge}</div>`;
+    return `<div class="concept-row"><span class="rep-badge">${c}×</span>${titleHtml}<span style="display:inline-flex;gap:4px;flex-wrap:wrap;align-items:center;">${catBadges}${ptBadges}${fmtBadge}</span></div>`;
   }).join("");
 }
 
@@ -863,9 +861,37 @@ function renderAll(){
   renderOutreach("gender");renderFunnel();renderNicheCloud();renderFormatTags();
   renderTierBars();renderAges();renderPersonaBars();renderGenderDonut();
   renderSrcKpis();renderPtKpis();renderConceptsKpis();renderProjKpis();
-  renderRosterHealth();renderTierBoxes();renderReplyRate();
+  renderRosterHealth();renderTierBoxes();renderReplyRate();renderSrcInsights();
   renderPartners();renderIdle();renderTopProducers();renderExpiring();renderNoPt();
   renderThroughput();renderTopCreators();renderCats();renderConcepts();renderProjections();
+}
+
+function renderSrcInsights(){
+  const el=document.getElementById("srcInsights"); if(!el || !LIVE_DATA) return;
+  const s=LIVE_DATA.sourcing, p=LIVE_DATA.projections;
+  const k=s.kpis, r=s.replyRate, funnel=s.funnel;
+  // Biggest funnel drop (find the most negative drop %)
+  let worstDrop={stage:'—',from:'—',pct:0};
+  for(let i=1;i<funnel.length;i++){
+    if(funnel[i].drop!=null && funnel[i].drop<worstDrop.pct){
+      worstDrop={stage:funnel[i].stage,from:funnel[i-1].stage,pct:funnel[i].drop};
+    }
+  }
+  const momTxt = (mom) => {
+    if(mom==null) return '<span class="muted">vs prev mo: n/a</span>';
+    const color=mom>=0?'var(--pos)':'var(--neg)';
+    return `<b style="color:${color};">${mom>=0?'+':''}${mom}% MoM</b>`;
+  };
+  const fmtMoney=(n)=>n==null?'—':'$'+(n>=1000?(n/1000).toFixed(1)+'k':n);
+  const prev = k.activeCreatorsPrev!=null ? k.activeCreatorsPrev : (k.activeCreatorsMoM!=null ? Math.round(k.activeCreators/(1+k.activeCreatorsMoM/100)) : null);
+  const insights=[
+    `• <b>${k.outreachThisMonth} creators</b> added this month — base of the cohort.`,
+    `• Reply rate <b>${r.pct}%</b> (${r.replied} / ${r.emailed} emailed) — share of those we reached out to who wrote back.`,
+    `• Funnel bottleneck at <b>${worstDrop.from} → ${worstDrop.stage}</b> (${worstDrop.pct}%): biggest drop in the cohort.`,
+    `• Active Creators ${momTxt(k.activeCreatorsMoM)} (${k.activeCreators}${prev!=null?' vs '+prev+' prev mo':''}) — TTB throughput.`,
+    `• Projection: <b style="color:var(--rust);">${p.kpis.conceptsCount} concepts</b> in production, ~<b>${fmtMoney(p.kpis.projectedPayout)}</b> projected payout next month.`
+  ];
+  el.innerHTML=insights.map(i=>`<div>${i}</div>`).join("");
 }
 
 function renderSrcKpis(){
