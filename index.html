@@ -804,7 +804,7 @@ function renderCats(){const max=CATS[0][1];document.getElementById("catBars").in
 
 function renderConcepts(){
   document.getElementById("conceptList").innerHTML=CONCEPTS_REP.filter(([t,c,fmt,url])=>!!url).map(row=>{
-    const [t,c,fmt,url,cats,products,campaigns]=row;
+    const [t,c,fmt,url,cats,products,campaigns,variants]=row;
     const fmtBadge = fmt==="VID"
       ? '<span class="cn-bdg" style="background:#E6EEF7;color:#2C5A8A;" data-tip="Vertical format (Meta)">VID</span>'
       : fmt==="TV"
@@ -816,9 +816,14 @@ function renderConcepts(){
     const catCell = stackBadges(cats, v=>`background:${catColor(v)};color:#fff;`, "Category");
     const ptCell = stackBadges(products, ()=>"background:#EFEAE0;color:#4A4030;border:.5px solid #D4C9B0;", "Product type");
     const cmpCell = stackBadges(campaigns, ()=>"background:#F0E8DA;color:#6A4A1F;border:.5px solid #D9C49E;", "Campaign");
+    // If multiple task titles rolled up to this canonical, show "+N variants" hint
+    const isGrouped = variants && variants.length > 1;
+    const groupHint = isGrouped
+      ? ` <span style="font-size:9px;color:var(--muted);font-weight:500;" data-tip="Variants: ${variants.map(v=>v.replace(/"/g,'&quot;')).join(' · ')}">· ${variants.length} title variants ⓘ</span>`
+      : '';
     const titleHtml = url
-      ? `<a href="${url}" target="_blank" style="font-weight:600;color:var(--black);border-bottom:1px dotted var(--rust);text-decoration:none;" data-tip="Open script (Google Docs)">${t}</a>`
-      : `<span style="font-weight:600;">${t}</span>`;
+      ? `<a href="${url}" target="_blank" style="font-weight:600;color:var(--black);border-bottom:1px dotted var(--rust);text-decoration:none;" data-tip="Open script (Google Docs)">${t}</a>${groupHint}`
+      : `<span style="font-weight:600;">${t}</span>${groupHint}`;
     return `<tr>
       <td class="r"><span class="rep-badge">${c}×</span></td>
       <td>${titleHtml}</td>
