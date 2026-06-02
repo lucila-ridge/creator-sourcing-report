@@ -326,8 +326,22 @@
 
     <div class="scard">
       <div class="st" style="margin-bottom:2px;">Concepts in Rotation</div>
-      <div class="ss">same script sent to multiple creators · click title to open script</div>
-      <div id="conceptList"></div>
+      <div class="ss" style="margin-bottom:10px;">same script sent to multiple creators · click title to open script</div>
+      <div style="overflow-x:auto;">
+        <table class="tbl" style="font-size:11px;">
+          <thead>
+            <tr>
+              <th class="r" style="width:48px;">Reps</th>
+              <th>Title</th>
+              <th style="width:90px;">Category</th>
+              <th style="width:120px;">Product Type</th>
+              <th style="width:100px;">Campaign</th>
+              <th style="width:54px;">Format</th>
+            </tr>
+          </thead>
+          <tbody id="conceptList"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -790,12 +804,29 @@ function renderCats(){const max=CATS[0][1];document.getElementById("catBars").in
 
 function renderConcepts(){
   document.getElementById("conceptList").innerHTML=CONCEPTS_REP.filter(([t,c,fmt,url])=>!!url).map(row=>{
-    const [t,c,fmt,url,cats,products]=row;
-    const fmtBadge = fmt==="VID" ? '<span class="cn-bdg" style="background:#E6EEF7;color:#2C5A8A;" data-tip="Vertical format (Meta)">VID</span>' : '<span class="cn-bdg" style="background:#FBE9D8;color:#8A5A1F;" data-tip="Horizontal format (YouTube / stream)">TV</span>';
-    const catBadges = (cats||[]).map(ct=>`<span class="cn-bdg" style="background:${catColor(ct)};color:#fff;" data-tip="Category">${ct}</span>`).join("");
-    const ptBadges = (products||[]).map(pt=>`<span class="cn-bdg" style="background:#EFEAE0;color:#4A4030;border:.5px solid #D4C9B0;" data-tip="Product type">${pt}</span>`).join("");
-    const titleHtml = url ? `<a href="${url}" target="_blank" style="flex:1;font-weight:600;color:var(--black);border-bottom:1px dotted var(--rust);text-decoration:none;" data-tip="Open script (Google Docs)">${t}</a>` : `<span style="flex:1;font-weight:600;">${t}</span>`;
-    return `<div class="concept-row"><span class="rep-badge">${c}×</span>${titleHtml}<span style="display:inline-flex;gap:4px;flex-wrap:wrap;align-items:center;">${catBadges}${ptBadges}${fmtBadge}</span></div>`;
+    const [t,c,fmt,url,cats,products,campaigns]=row;
+    const fmtBadge = fmt==="VID"
+      ? '<span class="cn-bdg" style="background:#E6EEF7;color:#2C5A8A;" data-tip="Vertical format (Meta)">VID</span>'
+      : fmt==="TV"
+        ? '<span class="cn-bdg" style="background:#FBE9D8;color:#8A5A1F;" data-tip="Horizontal format (YouTube / stream)">TV</span>'
+        : '<span class="muted" style="font-size:10px;">—</span>';
+    const stackBadges = (arr, styleFn, tip) => (arr&&arr.length)
+      ? arr.map(v=>`<span class="cn-bdg" style="${styleFn(v)}" data-tip="${tip}">${v}</span>`).join(" ")
+      : '<span class="muted" style="font-size:10px;">—</span>';
+    const catCell = stackBadges(cats, v=>`background:${catColor(v)};color:#fff;`, "Category");
+    const ptCell = stackBadges(products, ()=>"background:#EFEAE0;color:#4A4030;border:.5px solid #D4C9B0;", "Product type");
+    const cmpCell = stackBadges(campaigns, ()=>"background:#F0E8DA;color:#6A4A1F;border:.5px solid #D9C49E;", "Campaign");
+    const titleHtml = url
+      ? `<a href="${url}" target="_blank" style="font-weight:600;color:var(--black);border-bottom:1px dotted var(--rust);text-decoration:none;" data-tip="Open script (Google Docs)">${t}</a>`
+      : `<span style="font-weight:600;">${t}</span>`;
+    return `<tr>
+      <td class="r"><span class="rep-badge">${c}×</span></td>
+      <td>${titleHtml}</td>
+      <td>${catCell}</td>
+      <td>${ptCell}</td>
+      <td>${cmpCell}</td>
+      <td>${fmtBadge}</td>
+    </tr>`;
   }).join("");
 }
 
