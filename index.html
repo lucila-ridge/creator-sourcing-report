@@ -51,6 +51,7 @@
   .sechdr h2{margin:0;font-size:22px;font-family:'Barlow Condensed',sans-serif;font-weight:800;letter-spacing:.05em;text-transform:uppercase;}
   .sechdr p{margin:4px 0 0;color:var(--muted);font-size:12px;}
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+  #conceptsKpis{grid-template-columns:repeat(5,1fr);}
   .kpi{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between;min-height:108px;}
   .kpi .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;min-height:28px;}
   .kpi .row{display:flex;align-items:baseline;gap:8px;}
@@ -386,6 +387,7 @@
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWtP6r3AQE609CvgJNlaXltTfL6J3nC_zi9RRuRf1e0CrpuK4bEUWKyy0a7AF7n58/exec";
 let LIVE_DATA = null;  // populated by loadData()
 let CATEGORY_FILTER = "All";  // current category filter (drives ?category= on fetch)
+let MONTH_FILTER = "2026-05"; // current month filter (drives ?month= on fetch)
 
 let OUTREACH = {
   gender: { Male:[113,0,0,0,0,0,0,0], Female:[55,0,0,0,0,0,0,0], "Not set":[0,0,0,0,0,0,0,0] },
@@ -558,16 +560,39 @@ function showTab(id){
 
 let monthBannerTimeout;
 function handleMonthChange(value, label){
+  if(value === MONTH_FILTER) return;
+  MONTH_FILTER = value;
+  // Show transient banner while refetching
   const banner=document.getElementById("monthbanner");
-  if(!banner)return;
-  if(value==="2026-05"){
-    banner.textContent=`Showing ${label} data`;
-  } else {
-    banner.textContent=`${label} not yet populated — will fill in as concepts ship. Showing May '26 snapshot for now.`;
+  if(banner){
+    banner.textContent = `Loading ${label} data…`;
+    banner.classList.add("show");
+    clearTimeout(monthBannerTimeout);
+    monthBannerTimeout=setTimeout(()=>banner.classList.remove("show"), 3500);
   }
-  banner.classList.add("show");
-  clearTimeout(monthBannerTimeout);
-  monthBannerTimeout=setTimeout(()=>banner.classList.remove("show"),3500);
+  // Dim the report while fetching (same UX as category filter)
+  const w=document.querySelector(".wrap"); if(w){w.style.opacity="0.4";w.style.pointerEvents="none";}
+  const busy=document.getElementById("catBusy"); if(busy) busy.style.display="inline-block";
+  fetchData();
+}
+
+function renderPartialMonthHint(){
+  // Show a subtle hint if the selected month is the current calendar month and partial
+  const m = LIVE_DATA && LIVE_DATA.monthMeta;
+  let hint = document.getElementById("partialMonthHint");
+  if (!m || !m.partial) {
+    if (hint) hint.style.display = "none";
+    return;
+  }
+  if (!hint) {
+    hint = document.createElement("div");
+    hint.id = "partialMonthHint";
+    hint.style.cssText = "background:#FFF6E5;border:1px solid #E8C56B;border-radius:6px;padding:8px 14px;margin:0 0 14px;font-size:11px;color:#7A5A1F;display:flex;align-items:center;gap:8px;";
+    const wrap = document.querySelector(".wrap");
+    if (wrap) wrap.insertBefore(hint, wrap.firstChild);
+  }
+  hint.innerHTML = `<span style="font-size:13px;">ⓘ</span><span><b>Partial month so far</b> · day ${m.daysSoFar} of ${m.daysInMonth}. KPIs and counts reflect what's happened up to today. Expect them to grow as the month progresses.</span>`;
+  hint.style.display = "flex";
 }
 
 let PROJ_CATS=[["EDC",24,"#5B7FA6"],["TECH",13,"#C18A48"],["TRAVEL",10,"#6F9A77"],["JEWELRY",8,"#8E73B5"]];
@@ -900,6 +925,7 @@ function renderAll(){
   renderRosterHealth();renderTierBoxes();renderReplyRate();renderSrcInsights();
   renderPartners();renderIdle();renderTopProducers();renderExpiring();renderNoPt();
   renderThroughput();renderTopCreators();renderCats();renderConcepts();renderProjections();
+  renderPartialMonthHint();
 }
 
 function renderSrcInsights(){
@@ -947,10 +973,18 @@ function renderConceptsKpis(){
   const el=document.getElementById("conceptsKpis"); if(!el) return;
   const k=LIVE_DATA?LIVE_DATA.concepts.kpis:null;
   const pill=(v)=>v==null?'<span class="pill flat">–</span>':v>=0?`<span class="pill up">+${v}%</span>`:`<span class="pill down">${v}%</span>`;
+  // Turnaround inverted: faster is better, so positive MoM (slower) is bad
+  const ttPill=(v)=>v==null?'<span class="pill flat">–</span>':v<=0?`<span class="pill up">${v}%</span>`:`<span class="pill down">+${v}%</span>`;
+  const ttNum = (k && k.avgTurnaround!=null) ? k.avgTurnaround+'d' : '—';
+  const ttSub = (k && k.avgTurnaround!=null)
+    ? `avg of ${k.avgTurnaroundN} task${k.avgTurnaroundN===1?'':'s'} this month`
+    : 'no transitions tracked yet · setup pending';
+  const ttTip = "Days between 'Working On It' (script sent) and 'In Progress' (content received). Tracked hourly via Apps Script polling — starts measuring from setup date forward.";
   el.innerHTML=`
     <div class="kpi"><div class="lbl">Creator Concepts</div><div><div class="row"><span class="num">${k?k.conceptsThisMonth:'—'}</span>${pill(k&&k.conceptsMoM)}</div><div class="sub">finalized this month</div></div></div>
     <div class="kpi"><div class="lbl" data-tip="Unique creators who produced ≥1 concept this month.">Total Creators</div><div><div class="row"><span class="num">${k?k.totalCreators:'—'}</span>${pill(k&&k.creatorsMoM)}</div><div class="sub">produced this month</div></div></div>
     <div class="kpi"><div class="lbl">Avg Concepts / Creator</div><div><div class="row"><span class="num">${k?k.avgPerCreator:'—'}</span><span class="pill flat">1–6</span></div><div class="sub">${k?k.conceptsThisMonth+' ÷ '+k.totalCreators+' creators':''}</div></div></div>
+    <div class="kpi"><div class="lbl" data-tip="${ttTip}">Avg Turnaround</div><div><div class="row"><span class="num">${ttNum}</span>${ttPill(k&&k.turnaroundMoM)}</div><div class="sub">${ttSub}</div></div></div>
     <div class="kpi"><div class="lbl">Vertical vs Horizontal</div><div><div class="row"><span class="num">${k?k.vidPct+'%':'—'}</span><span class="pill flat">VID</span></div><div class="sub">${k?k.totalVid+' VID · '+k.totalTv+' TV (horizontal)':''}</div></div></div>`;
 }
 
@@ -1057,6 +1091,7 @@ function fetchData(opts){
   opts=opts||{};
   const params=['callback=loadData'];
   if(CATEGORY_FILTER && CATEGORY_FILTER!=="All") params.push('category='+encodeURIComponent(CATEGORY_FILTER));
+  if(MONTH_FILTER) params.push('month='+encodeURIComponent(MONTH_FILTER));
   if(opts.fresh) params.push('fresh=1');
   params.push('_='+Date.now()); // cache-bust the browser
   const s=document.createElement('script');
